@@ -48,6 +48,49 @@ public class DialogueBoxPatches
         if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning || (!Config.ShowWithQuestions && __instance.isQuestion) || (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) || (!Config.ShowWithEvents && Game1.eventUp) || (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
             return;
         AdjustWindow(ref __instance);
+        
+        if (__instance.characterDialogue.speaker is null)
+            return;
+
+        if (!Config.PortraitReactions) 
+            return;
+        
+        var currentEmotion = __instance.characterDialogue?.getPortraitIndex();
+        if (currentEmotion.HasValue == false)
+            return;
+            
+        var name = __instance.characterDialogue?.speaker.Name ?? "Default";
+            
+        #if DEBUG
+        Log($"Speaker: {name}");
+        #endif
+
+        if (!ModEntry.Reactions.ContainsKey(name))
+        {
+            Log($"{name} not in custom reactions. Using default...");
+            name = "Default";
+        }
+        
+        if(ModEntry.Reactions.TryGetValue(name, out var reactions) && reactions.TryGetValue((int)currentEmotion, out var farmerEmotion))
+        {
+#if DEBUG
+            Log($"Using emotion {farmerEmotion}");
+#endif
+            try
+            {
+                var p = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait{farmerEmotion}");
+                
+                //if no portrait for that emotion, make it jump to default
+                if (p is null)
+                    throw new NullReferenceException();
+                
+                ModEntry.portraitTexture = p;
+            }
+            catch (Exception)
+            {
+                ModEntry.portraitTexture = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait");
+            }
+        }
     }
     
     public static void Post_drawBox(DialogueBox __instance, SpriteBatch b)

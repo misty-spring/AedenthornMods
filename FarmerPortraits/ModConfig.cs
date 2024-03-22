@@ -10,5 +10,12 @@
         public bool FacingFront { get; set; }
         public bool UseCustomPortrait { get; set; } = true;
         public bool UseCustomBackground { get; set; } = true;
+        public bool PortraitReactions { get; set; }
+        public int Reaction0 { get; set; }
+        public int Reaction1 { get; set; }
+        public int Reaction2 { get; set; }
+        public int Reaction3 { get; set; }
+        public int Reaction4 { get; set; }
+        public int Reaction5 { get; set; }
     }
 }
