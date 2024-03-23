@@ -12,9 +12,9 @@
         public bool UseCustomBackground { get; set; } = true;
         public bool PortraitReactions { get; set; }
         public int Reaction0 { get; set; }
-        public int Reaction1 { get; set; }
+        public int Reaction1 { get; set; } = 1;
         public int Reaction2 { get; set; }
-        public int Reaction3 { get; set; }
+        public int Reaction3 { get; set; } = 2;
         public int Reaction4 { get; set; }
         public int Reaction5 { get; set; }
     }

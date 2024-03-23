@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,6 +17,7 @@ public class DialogueBoxPatches
     private static Texture2D Background => ModEntry.backgroundTexture;
     private static Texture2D Portrait => ModEntry.portraitTexture;
     private static ModConfig Config => ModEntry.Config;
+    internal static bool Done { get; set; }
 #if DEBUG
     private const LogLevel Level = LogLevel.Debug;
 #else
@@ -36,10 +39,16 @@ public class DialogueBoxPatches
             prefix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Pre_setUpIcons))
         );
         
-        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV constructor \"Object(string,int,bool,int,int)\".");
+        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV constructor \"DialogueBox(Dialogue)\".");
         harmony.Patch(
             original: AccessTools.Constructor(typeof(DialogueBox), new Type[] { typeof(Dialogue)}),
             postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_new))
+        );
+        
+        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.closeDialogue\".");
+        harmony.Patch(
+            original: AccessTools.Method(typeof(DialogueBox), nameof(DialogueBox.closeDialogue)),
+            postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_closeDialogue))
         );
     }
     
@@ -153,7 +162,7 @@ public class DialogueBoxPatches
         var baseTexture = AccessTools.FieldRefAccess<FarmerRenderer, Texture2D>(Game1.player.FarmerRenderer, "baseTexture");
 
         // body
-        b.Draw(baseTexture, position + positionOffset, new Rectangle?(sourceRect), overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f);
+        b.Draw(baseTexture, position + positionOffset, sourceRect, overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f);
 				
         // eyes
         sourceRect.Offset(288, 0);
@@ -284,11 +293,111 @@ public class DialogueBoxPatches
             return;
         AdjustWindow(ref __instance);
     }
+
+    private static void AdjustText(ref DialogueBox box)
+    {
+        if (Done)
+            return;
+        
+        if (box.characterDialogue is null)
+            return;
+        
+        //after a few hours of making the most convoluted code ever, i found out re-setting the dialogue auto adjusts the text.
+        var originalDialogues = box.characterDialogue.dialogues;
+        box.characterDialogue.dialogues = originalDialogues;
+        Done = true;
+        
+#if DEBUG
+        Log(box.characterDialogue.speaker.displayName + ':');
+        foreach (var line in box.characterDialogue.dialogues)
+        {
+            Log(line.Text);
+        }
+#endif
+    }
     
+    /* i refuse for that code to go to waste, leaving it in the commit history in case it's useful in the future:
+        var originalDialogues = box.characterDialogue.dialogues;
+               var newDialogues = new List<DialogueLine>();
+               foreach (var dialogue in box.characterDialogue.dialogues)
+               {
+                   //max is 7
+                   var realWidth = box.width - 384;
+                   var size = SpriteText.getHeightOfString(dialogue.Text, realWidth);
+       #if DEBUG
+                   Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
+                   Log(dialogue.Text);
+       #endif
+                   if (size * 2 <= box.height)
+                   {
+                       newDialogues.Add(dialogue);
+                       continue;
+                   }
+       
+                   /*
+                   StringBuilder original = new("");
+                   StringBuilder addition = new("");
+                   var g = ArgUtility.SplitBySpace(dialogue.Text);
+                   var count = 0;
+                   var limit = box.height - 70;
+                   foreach (var str in g)
+                   {
+                       if (count < limit)
+                       {
+                           original.Append(str);
+                           original.Append(' ');
+                       }
+                       else
+                       {
+                           addition.Append(str);
+                           addition.Append(' ');
+                       }
+       
+                       count = SpriteText.getHeightOfString(original.ToString(), realWidth);
+                   }* /
+       
+                   var index = box.characterDialogue.dialogues.IndexOf(dialogue);
+                   
+                   /*if(string.IsNullOrWhiteSpace(addition.ToString()) == false)
+                   {
+                       var orig = new DialogueLine(original.ToString());
+                       var copy = new DialogueLine(addition.ToString());
+                       
+                       newDialogues.Add(orig);
+                       newDialogues.Add(copy);
+       #if DEBUG
+                       Log($"count: {count}, orig: {orig.Text}, add: {copy.Text}");
+       #endif
+                   }
+                   else* /
+                       newDialogues.Add(originalDialogues[index]);
+               }
+               box.characterDialogue.dialogues = newDialogues;
+               Done = true;
+               
+       #if DEBUG
+               foreach (var line in box.characterDialogue.dialogues)
+               {
+                   Log(line.Text);
+               }
+       #endif
+     */
+
     private static void AdjustWindow(ref DialogueBox __instance)
     {
         __instance.x = Math.Max(520, (int)Utility.getTopLeftPositionForCenteringOnScreen(__instance.width, __instance.height, 0, 0).X + 260);
         __instance.width = (int)Math.Min(Game1.uiViewport.Width - __instance.x - 48, 1200);
         __instance.friendshipJewel = new Rectangle(__instance.x + __instance.width - 64, __instance.y + 256, 44, 44);
+
+        //adjust
+        AdjustText(ref __instance);
+    }
+
+    private static void Post_closeDialogue(DialogueBox __instance)
+    {
+        #if DEBUG
+        Log("Closing");
+        #endif
+        Done = __instance.characterDialogue.dialogues.Count > 1;
     }
 }

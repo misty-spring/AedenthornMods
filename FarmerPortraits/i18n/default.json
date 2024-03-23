@@ -23,5 +23,7 @@
   "SpecificReactions.values.4": "Love",
   "SpecificReactions.values.5": "Special",
   "SpecificReactions.notFound": "Panel {0}",
-  "SpecificReactions.NPC": "NPC: "
+  "SpecificReactions.NPC": "NPC: ",
+  "Section.General": "General",
+  "Section.Customizable": "Customizable"
 }

@@ -19,7 +19,7 @@ namespace BuffFramework
                 return rate;
             foreach(var b in buffDict.Values)
             {
-                if((b.TryGetValue("buffId", out var id) && GetInt(id) == buff.which) || (b.TryGetValue("which", out var which) && GetInt(which) == buff.which)) 
+                if((b.TryGetValue("buffId", out var id) && GetInt(id) == buff.id) || (b.TryGetValue("which", out var which) && GetInt(which) == buff.which)) 
                     return b.TryGetValue("glowRate", out var r) ? GetFloat(r) : 0.05f;
             }
             return rate;

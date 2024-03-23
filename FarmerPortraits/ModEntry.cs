@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FarmerPortraits.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -13,7 +14,7 @@ public sealed class ModEntry : Mod
     internal static IMonitor SMonitor;
     internal static IModHelper SHelper;
     internal static ModConfig Config;
-    internal static ModEntry context;
+    //internal static ModEntry context;
 
     internal static Texture2D portraitTexture;
     internal static Texture2D backgroundTexture;
@@ -26,7 +27,7 @@ public sealed class ModEntry : Mod
     {
         Config = Helper.ReadConfig<ModConfig>();
 
-        context = this;
+        //context = this;
 
         SMonitor = Monitor;
         SHelper = helper;
@@ -59,6 +60,11 @@ public sealed class ModEntry : Mod
             mod: ModManifest,
             reset: () => Config = new ModConfig(),
             save: () => Helper.WriteConfig(Config)
+        );
+        
+        configMenu.AddSectionTitle(
+            mod: ModManifest,
+            text: () => Helper.Translation.Get("Section.General")
         );
 
         configMenu.AddBoolOption(
@@ -99,6 +105,12 @@ public sealed class ModEntry : Mod
             getValue: () => Config.FacingFront,
             setValue: value => Config.FacingFront = value
         );
+        
+        configMenu.AddSectionTitle(
+            mod: ModManifest,
+            text: () => Helper.Translation.Get("Section.Customizable")
+            );
+        
         configMenu.AddBoolOption(
             mod: ModManifest,
             name: () => Helper.Translation.Get("CustomPortrait.title"),
@@ -218,9 +230,9 @@ public sealed class ModEntry : Mod
 
     private void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if(e.Button == SButton.Enter)
+        if(e.Button == SButton.Enter && Context.IsWorldReady)
         {
-            var d = new Dialogue(Game1.getCharacterFromName("Lewis"), null, "Test in 1.6.2 version.#$b#This is a reaction change!$1#$b#It's customizable...$3");
+            var d = new Dialogue(Game1.getCharacterFromName("Lewis"), null, "This is a reaction change!$1#$b#Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.$u");
             Game1.DrawDialogue(d);
         }
     }
