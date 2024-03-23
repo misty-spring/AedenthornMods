@@ -44,7 +44,7 @@ public sealed class ModEntry : Mod
         helper.Events.Content.AssetsInvalidated += Asset.OnInvalidate;
             
         var harmony = new Harmony(ModManifest.UniqueID);
-        Patches.DialogueBoxPatches.Apply(harmony);
+        DialogueBoxPatches.Apply(harmony);
     }
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
@@ -164,7 +164,7 @@ public sealed class ModEntry : Mod
             setValue: value => Config.Reaction0 = int.Parse(value),
             allowedValues: allowedValues,
             //what this huge thing does: checks if TL is default/"not found", if so uses "Panel {0}". Otherwise, it uses the appropiate key
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
             );
         
         configMenu.AddTextOption(
@@ -173,7 +173,7 @@ public sealed class ModEntry : Mod
             getValue: () => $"{Config.Reaction1}",
             setValue: value => Config.Reaction1 = int.Parse(value),
             allowedValues: allowedValues,
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
             );
         
         configMenu.AddTextOption(
@@ -182,7 +182,7 @@ public sealed class ModEntry : Mod
             getValue: () => $"{Config.Reaction2}",
             setValue: value => Config.Reaction2 = int.Parse(value),
             allowedValues: allowedValues,
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
         );
         
         configMenu.AddTextOption(
@@ -191,7 +191,7 @@ public sealed class ModEntry : Mod
             getValue: () => $"{Config.Reaction3}",
             setValue: value => Config.Reaction3 = int.Parse(value),
             allowedValues: allowedValues,
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
         );
         
         configMenu.AddTextOption(
@@ -200,7 +200,7 @@ public sealed class ModEntry : Mod
             getValue: () => $"{Config.Reaction4}",
             setValue: value => Config.Reaction4 = int.Parse(value),
             allowedValues: allowedValues,
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().Contains("No translation") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
         );
         
         configMenu.AddTextOption(
@@ -209,7 +209,7 @@ public sealed class ModEntry : Mod
             getValue: () => $"{Config.Reaction5}",
             setValue: value => Config.Reaction5 = int.Parse(value),
             allowedValues: allowedValues,
-            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().StartsWith("(no translation:") ? string.Format(Helper.Translation.Get($"SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
+            formatAllowedValue: value => Helper.Translation.Get($"SpecificReactions.values.{value}").ToString().StartsWith("(no translation:") ? string.Format(Helper.Translation.Get("SpecificReactions.notFound"), value) : Helper.Translation.Get($"SpecificReactions.values.{value}")
         );
     }
 
