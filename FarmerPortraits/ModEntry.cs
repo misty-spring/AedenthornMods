@@ -16,8 +16,8 @@ public sealed class ModEntry : Mod
     internal static ModConfig Config;
     //internal static ModEntry context;
 
-    internal static Texture2D portraitTexture;
-    internal static Texture2D backgroundTexture;
+    internal static Texture2D PortraitTexture;
+    internal static Texture2D BackgroundTexture;
 
     internal static Dictionary<string, Dictionary<int, int>> Reactions { get; set; } = new();
 
@@ -237,7 +237,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void Display_MenuChanged(object sender, MenuChangedEventArgs e)
+    private static void Display_MenuChanged(object sender, MenuChangedEventArgs e)
     {
         ReloadTextures();
     }
@@ -246,19 +246,19 @@ public sealed class ModEntry : Mod
     {
         try
         {
-            portraitTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+            PortraitTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
         }
         catch
         {
-            portraitTexture = null;
+            PortraitTexture = null;
         }
         try
         {
-            backgroundTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/background");
+            BackgroundTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/background");
         }
         catch
         {
-            backgroundTexture = null;
+            BackgroundTexture = null;
         }
     }
 }

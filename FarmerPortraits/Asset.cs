@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 
@@ -29,5 +30,10 @@ public static class Asset
     {
         if (Context.IsWorldReady == false)
             return;
+        
+        if (e.NamesWithoutLocale.Any( name => name.BaseName == "aedenthorn.FarmerPortraits/reactions") == false)
+            return;
+
+        ModEntry.Reactions = ModEntry.SHelper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
     }
 }

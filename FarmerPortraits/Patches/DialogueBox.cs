@@ -7,13 +7,14 @@ using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using StardewValley.Tools;
+// ReSharper disable PossibleLossOfFraction
 
 namespace FarmerPortraits.Patches;
 
 public class DialogueBoxPatches
 {
-    private static Texture2D Background => ModEntry.backgroundTexture;
-    private static Texture2D Portrait => ModEntry.portraitTexture;
+    private static Texture2D Background => ModEntry.BackgroundTexture;
+    private static Texture2D Portrait => ModEntry.PortraitTexture;
     private static ModConfig Config => ModEntry.Config;
     internal static bool Done { get; set; }
 #if DEBUG
@@ -52,60 +53,85 @@ public class DialogueBoxPatches
     
     public static void Pre_setUpIcons(DialogueBox __instance)
     {
-        if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning || (!Config.ShowWithQuestions && __instance.isQuestion) || (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) || (!Config.ShowWithEvents && Game1.eventUp) || (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
-            return;
-        AdjustWindow(ref __instance);
-        
-        if (__instance.characterDialogue.speaker is null)
-            return;
-
-        if (!Config.PortraitReactions) 
-            return;
-        
-        var currentEmotion = __instance.characterDialogue?.getPortraitIndex();
-        if (currentEmotion.HasValue == false)
-            return;
-            
-        var name = __instance.characterDialogue?.speaker.Name ?? "Default";
-            
-        #if DEBUG
-        Log($"Speaker: {name}");
-        #endif
-
-        if (!ModEntry.Reactions.ContainsKey(name))
+        try
         {
-            Log($"{name} not in custom reactions. Using default...");
-            name = "Default";
-        }
-        
-        if(ModEntry.Reactions.TryGetValue(name, out var reactions) && reactions.TryGetValue((int)currentEmotion, out var farmerEmotion))
-        {
+            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
+                (!Config.ShowWithQuestions && __instance.isQuestion) ||
+                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
+                (!Config.ShowWithEvents && Game1.eventUp) ||
+                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+                return;
+            AdjustWindow(ref __instance);
+
+            if (__instance.characterDialogue.speaker is null)
+                return;
+
+            if (!Config.PortraitReactions)
+                return;
+
+            var currentEmotion = __instance.characterDialogue?.getPortraitIndex();
+            if (currentEmotion.HasValue == false)
+                return;
+
+            var name = __instance.characterDialogue?.speaker.Name ?? "Default";
+
 #if DEBUG
-            Log($"Using emotion {farmerEmotion}");
+            Log($"Speaker: {name}");
 #endif
-            try
+
+            if (!ModEntry.Reactions.ContainsKey(name))
             {
-                var p = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait{farmerEmotion}");
-                
-                //if no portrait for that emotion, make it jump to default
-                if (p is null)
-                    throw new NullReferenceException();
-                
-                ModEntry.portraitTexture = p;
+                Log($"{name} not in custom reactions. Using default...");
+                name = "Default";
             }
-            catch (Exception)
+
+            if (ModEntry.Reactions.TryGetValue(name, out var reactions) &&
+                reactions.TryGetValue((int)currentEmotion, out var farmerEmotion))
             {
-                ModEntry.portraitTexture = ModEntry.SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+#if DEBUG
+                Log($"Using emotion {farmerEmotion}");
+#endif
+                try
+                {
+                    var p = ModEntry.SHelper.GameContent.Load<Texture2D>(
+                        $"aedenthorn.FarmerPortraits/portrait{farmerEmotion}");
+
+                    //if no portrait for that emotion, make it jump to default
+                    if (p is null)
+                        throw new NullReferenceException();
+
+                    ModEntry.PortraitTexture = p;
+                }
+                catch (Exception)
+                {
+                    ModEntry.PortraitTexture =
+                        ModEntry.SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+                }
             }
+        }
+        catch (Exception e)
+        {
+            Log($"Error: {e}");
         }
     }
     
     public static void Post_drawBox(DialogueBox __instance, SpriteBatch b)
     {
-        if (!Config.EnableMod || !__instance.transitionInitialized ||  __instance.transitioning || (!Config.ShowWithQuestions && __instance.isQuestion) ||  (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) || (!Config.ShowWithEvents && Game1.eventUp) || (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
-            return;
-        const int boxHeight = 384;
-        DrawBox(b, __instance.x - 448 - 32, __instance.y + __instance.height - boxHeight, 448, boxHeight);
+        try
+        {
+            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
+                (!Config.ShowWithQuestions && __instance.isQuestion) ||
+                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
+                (!Config.ShowWithEvents && Game1.eventUp) ||
+                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+                return;
+            const int boxHeight = 384;
+            DrawBox(b, __instance.x - 448 - 32, __instance.y + __instance.height - boxHeight, 448, boxHeight);
+        }
+        catch (Exception e)
+        {
+            Log($"Error: {e}", LogLevel.Error);
+        }
     }
 
     private static void DrawBox(SpriteBatch b, int xPos, int yPos, int boxWidth, int boxHeight)
@@ -222,8 +248,8 @@ public class DialogueBoxPatches
 
             if (!who.bathingClothes.Value)
             {
-                b.Draw(FarmerRenderer.shirtsTexture, position + positionOffset + new Vector2(16 + FarmerRenderer.featureXOffsetPerFrame[currentFrame] * 4, 56 + FarmerRenderer.featureYOffsetPerFrame[currentFrame] * 4 + (float)heightOffset * 4 - (who.IsMale ? 0 : 0)) * scale, shirtSourceRect, overrideColor.Equals(Color.White) ? Color.White : overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f + 1.5E-07f);
-                b.Draw(FarmerRenderer.shirtsTexture, position + positionOffset + new Vector2(16 + FarmerRenderer.featureXOffsetPerFrame[currentFrame] * 4, 56 + FarmerRenderer.featureYOffsetPerFrame[currentFrame] * 4 + (float)heightOffset * 4 - (who.IsMale ? 0 : 0)), dyedShirtSourceRect, overrideColor.Equals(Color.White) ? Utility.MakeCompletelyOpaque(who.GetShirtColor()) : overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f + 1.5E-07f + dyeLayerOffset);
+                b.Draw(FarmerRenderer.shirtsTexture, position + positionOffset + new Vector2(16 + FarmerRenderer.featureXOffsetPerFrame[currentFrame] * 4, 56 + FarmerRenderer.featureYOffsetPerFrame[currentFrame] * 4 + (float)heightOffset * 4 - 0) * scale, shirtSourceRect, overrideColor.Equals(Color.White) ? Color.White : overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f + 1.5E-07f);
+                b.Draw(FarmerRenderer.shirtsTexture, position + positionOffset + new Vector2(16 + FarmerRenderer.featureXOffsetPerFrame[currentFrame] * 4, 56 + FarmerRenderer.featureYOffsetPerFrame[currentFrame] * 4 + (float)heightOffset * 4 - 0), dyedShirtSourceRect, overrideColor.Equals(Color.White) ? Utility.MakeCompletelyOpaque(who.GetShirtColor()) : overrideColor, 0, Vector2.Zero, 16, SpriteEffects.None, 0.8f + 1.5E-07f + dyeLayerOffset);
             }
 
             // accessory
@@ -287,9 +313,20 @@ public class DialogueBoxPatches
     
     public static void Post_new(DialogueBox __instance)
     {
-        if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning || (!Config.ShowWithQuestions && __instance.isQuestion) || (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) || (!Config.ShowWithEvents && Game1.eventUp) || (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
-            return;
-        AdjustWindow(ref __instance);
+        try
+        {
+            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
+                (!Config.ShowWithQuestions && __instance.isQuestion) ||
+                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
+                (!Config.ShowWithEvents && Game1.eventUp) ||
+                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+                return;
+            AdjustWindow(ref __instance);
+        }
+        catch (Exception e)
+        {
+            Log($"Error: {e}", LogLevel.Error);
+        }
     }
 
     private static void AdjustText(ref DialogueBox box)
@@ -300,18 +337,9 @@ public class DialogueBoxPatches
         if (box.characterDialogue is null)
             return;
         
-        //after a few hours of making the most convoluted code ever, i found out re-setting the dialogue auto adjusts the text.
         var originalDialogues = box.characterDialogue.dialogues;
         box.characterDialogue.dialogues = originalDialogues;
         Done = true;
-        
-#if DEBUG
-        Log(box.characterDialogue.speaker.displayName + ':');
-        foreach (var line in box.characterDialogue.dialogues)
-        {
-            Log(line.Text);
-        }
-#endif
     }
 
     private static void AdjustWindow(ref DialogueBox __instance)
@@ -326,9 +354,16 @@ public class DialogueBoxPatches
 
     private static void Post_closeDialogue(DialogueBox __instance)
     {
-        #if DEBUG
-        Log("Closing");
-        #endif
-        Done = __instance.characterDialogue.dialogues.Count > 1;
+        try
+        {
+#if DEBUG
+            Log("Closing");
+#endif
+            Done = __instance.characterDialogue.dialogues.Count > 1;
+        }
+        catch (Exception e)
+        {
+            Log($"Error: {e}", LogLevel.Error);
+        }
     }
 }
