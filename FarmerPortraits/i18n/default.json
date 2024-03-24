@@ -25,5 +25,7 @@
   "SpecificReactions.notFound": "Panel {0}",
   "SpecificReactions.NPC": "NPC: ",
   "Section.General": "General",
-  "Section.Customizable": "Customizable"
+  "Section.Customizable": "Customizable",
+  "FixText.title": "Fix text",
+  "FixText.description": "If a dialogue is too long, it'll be continued in the next window."
 }

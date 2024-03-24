@@ -105,6 +105,13 @@ public sealed class ModEntry : Mod
             getValue: () => Config.FacingFront,
             setValue: value => Config.FacingFront = value
         );
+        configMenu.AddBoolOption(
+            mod: ModManifest,
+            name: () => Helper.Translation.Get("FixText.title"),
+            tooltip: () => Helper.Translation.Get("FixText.description"),
+            getValue: () => Config.FixText,
+            setValue: value => Config.FixText = value
+        );
         
         configMenu.AddSectionTitle(
             mod: ModManifest,

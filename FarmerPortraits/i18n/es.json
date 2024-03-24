@@ -25,5 +25,7 @@
   "SpecificReactions.notFound": "Panel {0}",
   "SpecificReactions.NPC": "PNJ: ",
   "Section.General": "General",
-  "Section.Customizable": "Personalizable"
+  "Section.Customizable": "Personalizable",
+  "FixText.title": "Corregir texto",
+  "FixText.description": "Si un diálogo es más largo que la ventana, se continuará en la siguiente."
 }

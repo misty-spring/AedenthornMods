@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,7 +18,6 @@ public class DialogueBoxPatches
     private static Texture2D Background => ModEntry.BackgroundTexture;
     private static Texture2D Portrait => ModEntry.PortraitTexture;
     private static ModConfig Config => ModEntry.Config;
-    internal static bool Done { get; set; }
 #if DEBUG
     private const LogLevel Level = LogLevel.Debug;
 #else
@@ -42,12 +43,6 @@ public class DialogueBoxPatches
         harmony.Patch(
             original: AccessTools.Constructor(typeof(DialogueBox), new[] { typeof(Dialogue)}),
             postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_new))
-        );
-        
-        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.closeDialogue\".");
-        harmony.Patch(
-            original: AccessTools.Method(typeof(DialogueBox), nameof(DialogueBox.closeDialogue)),
-            postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_closeDialogue))
         );
     }
     
@@ -331,15 +326,73 @@ public class DialogueBoxPatches
 
     private static void AdjustText(ref DialogueBox box)
     {
-        if (Done)
+        if (!Config.FixText)
             return;
         
         if (box.characterDialogue is null)
             return;
         
         var originalDialogues = box.characterDialogue.dialogues;
-        box.characterDialogue.dialogues = originalDialogues;
-        Done = true;
+        var newDialogues = new List<DialogueLine>();
+        foreach (var dialogue in box.characterDialogue.dialogues)
+        {
+            //max is 7
+            var realWidth = box.width - 384;
+            var size = SpriteText.getHeightOfString(dialogue.Text, realWidth);
+#if DEBUG
+            Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
+            Log(dialogue.Text);
+#endif
+            if (size * 2 <= box.height)
+            {
+                newDialogues.Add(dialogue);
+                continue;
+            }
+            StringBuilder original = new("");
+            StringBuilder addition = new("");
+            var g = ArgUtility.SplitBySpace(dialogue.Text);
+            var count = 0;
+            var limit = box.height - 70;
+            foreach (var str in g)
+            {
+                if (count < limit)
+                {
+                    original.Append(str);
+                    original.Append(' ');
+                }
+                else
+                {
+                    addition.Append(str);
+                    addition.Append(' ');
+                }
+       
+                count = SpriteText.getHeightOfString(original.ToString(), realWidth);
+            }
+       
+            var index = box.characterDialogue.dialogues.IndexOf(dialogue);
+                   
+            if(string.IsNullOrWhiteSpace(addition.ToString()) == false)
+            {
+                var orig = new DialogueLine(original.ToString());
+                var copy = new DialogueLine(addition.ToString());
+
+                newDialogues.Add(orig);
+                newDialogues.Add(copy);
+#if DEBUG
+                Log($"count: {count}, orig: {orig.Text}, add: {copy.Text}");
+#endif
+            }
+            else
+                newDialogues.Add(originalDialogues[index]);
+        }
+        box.characterDialogue.dialogues = newDialogues;
+               
+#if DEBUG
+        foreach (var line in box.characterDialogue.dialogues)
+        {
+            Log(line.Text);
+        }
+#endif
     }
 
     private static void AdjustWindow(ref DialogueBox __instance)
@@ -350,20 +403,5 @@ public class DialogueBoxPatches
 
         //adjust
         AdjustText(ref __instance);
-    }
-
-    private static void Post_closeDialogue(DialogueBox __instance)
-    {
-        try
-        {
-#if DEBUG
-            Log("Closing");
-#endif
-            Done = __instance.characterDialogue.dialogues.Count > 1;
-        }
-        catch (Exception e)
-        {
-            Log($"Error: {e}", LogLevel.Error);
-        }
     }
 }
