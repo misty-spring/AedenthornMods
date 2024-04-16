@@ -70,6 +70,18 @@ public class DialogueBoxPatches
             var currentEmotion = __instance.characterDialogue?.getPortraitIndex();
             if (currentEmotion.HasValue == false)
                 return;
+            
+            //fix unique reaction if datable NPC
+            if (__instance.characterDialogue.speaker.datable.Value)
+            {
+                //for datables, $3 is unique. so tell the mod they're doing the (supposedly) unique reaction
+                if(currentEmotion == 3)
+                    currentEmotion = 5;
+                
+                //& vice versa
+                if(currentEmotion == 5)
+                    currentEmotion = 3;
+            }
 
             var name = __instance.characterDialogue?.speaker.Name ?? "Default";
 
@@ -92,13 +104,13 @@ public class DialogueBoxPatches
                 try
                 {
                     var emotion = farmerEmotion == 0 ? "" : $"{farmerEmotion}";
-                    var p = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait{emotion}");
-
-                    ModEntry.PortraitTexture = p;
+                    
+                    if(Game1.content.DoesAssetExist<Texture2D>($"aedenthorn.FarmerPortraits/portrait{emotion}"))
+                        ModEntry.PortraitTexture = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait{emotion}");
                 }
                 catch (Exception)
                 {
-                    ModEntry.PortraitTexture = ModEntry.SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+                    ModEntry.PortraitTexture = null;
                 }
             }
         }
@@ -326,65 +338,47 @@ public class DialogueBoxPatches
     {
         if (!Config.FixText)
             return;
-
+        
         if (box.characterDialogue is null)
             return;
-        
-        var originalDialogues = box.characterDialogue.dialogues;
-        var newDialogues = new List<DialogueLine>();
-        foreach (var dialogue in box.characterDialogue.dialogues)
-        {
-            //max is 7
-            var realWidth = box.width - 384;
-            var size = SpriteText.getHeightOfString(dialogue.Text, realWidth);
-#if DEBUG
-            Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
-            Log(dialogue.Text);
-#endif
-            if (size * 2 <= box.height)
-            {
-                newDialogues.Add(dialogue);
-                continue;
-            }
-            StringBuilder original = new("");
-            StringBuilder addition = new("");
-            var g = ArgUtility.SplitBySpace(dialogue.Text);
-            var count = 0;
-            var limit = box.height - 70;
-            foreach (var str in g)
-            {
-                if (count < limit)
-                {
-                    original.Append(str);
-                    original.Append(' ');
-                }
-                else
-                {
-                    addition.Append(str);
-                    addition.Append(' ');
-                }
-       
-                count = SpriteText.getHeightOfString(original.ToString(), realWidth);
-            }
-       
-            var index = box.characterDialogue.dialogues.IndexOf(dialogue);
-                   
-            if(string.IsNullOrWhiteSpace(addition.ToString()) == false)
-            {
-                var orig = new DialogueLine(original.ToString());
-                var copy = new DialogueLine(addition.ToString());
 
-                newDialogues.Add(orig);
-                newDialogues.Add(copy);
+        var d = box.characterDialogue.dialogues[box.characterDialogue.currentDialogueIndex].Text; //box.characterDialogue.getCurrentDialogue();
+               
+        var realWidth = box.width - 384;
+        var size = SpriteText.getHeightOfString(d, realWidth);
 #if DEBUG
-                Log($"count: {count}, orig: {orig.Text}, add: {copy.Text}");
+        Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
+        Log(d);
 #endif
+        if (size * 2 <= box.height)
+        {
+            return;
+        }
+        
+        StringBuilder original = new("");
+        StringBuilder addition = new("");
+        var g = ArgUtility.SplitBySpace(d);
+        var count = 0;
+        var limit = box.height - 70;
+        foreach (var str in g)
+        {
+            if (count < limit)
+            {
+                original.Append(str);
+                original.Append(' ');
             }
             else
-                newDialogues.Add(originalDialogues[index]);
+            {
+                addition.Append(str);
+                addition.Append(' ');
+            }
+       
+            count = SpriteText.getHeightOfString(original.ToString(), realWidth);
         }
-        box.characterDialogue.dialogues = newDialogues;
-               
+
+        box.characterDialogue.dialogues[box.characterDialogue.currentDialogueIndex].Text = original.ToString();
+        if(addition.Length > 0)
+            box.characterDialogue.dialogues.Insert(box.characterDialogue.currentDialogueIndex + 1, new DialogueLine(addition.ToString()));
 #if DEBUG
         foreach (var line in box.characterDialogue.dialogues)
         {
@@ -404,13 +398,8 @@ public class DialogueBoxPatches
 
         if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
         {
-            var newHeight = SpriteText.getHeightOfString(box.dialogues[0], box.width - 20) + 4;
-
-            if (newHeight <= box.height)
-                return;
-            
-            box.height = newHeight;
-            box.y -= (newHeight - box.height + 60);
+            box.height = 384;
+            box.y = Game1.uiViewport.Height - box.height - 64;
         }
     }
 }
