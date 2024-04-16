@@ -9,6 +9,7 @@
         public bool ShowMisc { get; set; }
         public bool FacingFront { get; set; }
         public bool FixText { get; set; }
+        //public bool SmallerWindow { get; set; } = true;
         public bool UseCustomPortrait { get; set; } = true;
         public bool UseCustomBackground { get; set; } = true;
         public bool PortraitReactions { get; set; }

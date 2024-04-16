@@ -30,10 +30,15 @@ public static class Asset
     {
         if (Context.IsWorldReady == false)
             return;
-        
-        if (e.NamesWithoutLocale.Any( name => name.BaseName == "aedenthorn.FarmerPortraits/reactions") == false)
-            return;
 
-        ModEntry.Reactions = ModEntry.SHelper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
+        if (e.NamesWithoutLocale.Any(name => name.BaseName == "aedenthorn.FarmerPortraits/reactions"))
+        {
+            ModEntry.Reactions = ModEntry.SHelper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
+        }
+        
+        if (e.NamesWithoutLocale.Any( name => name.StartsWith("aedenthorn.FarmerPortraits/portrait")))
+        {
+            ModEntry.ReloadTextures();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FarmerPortraits.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,19 +38,31 @@ public sealed class ModEntry : Mod
         helper.Events.Input.ButtonPressed += Input_ButtonPressed;
 #endif
         helper.Events.GameLoop.SaveLoaded += GameLoop_SaveLoaded;
-
-        helper.Events.Display.MenuChanged += Display_MenuChanged;
         
         helper.Events.Content.AssetRequested += Asset.OnRequest;
         helper.Events.Content.AssetsInvalidated += Asset.OnInvalidate;
             
         var harmony = new Harmony(ModManifest.UniqueID);
         DialogueBoxPatches.Apply(harmony);
+        EventPatches.Apply(harmony);
     }
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
-
+        var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+        contentPatcherApi?.RegisterToken(
+            mod: ModManifest,
+            name: "Festival",
+            getValue: () =>
+            {
+                if (Context.IsWorldReady && EventPatches.FestivalId != null)
+                {
+                    return new[] { EventPatches.FestivalId };
+                }
+                
+                return ArraySegment<string>.Empty;
+            });
+        
         // get Generic Mod Config Menu's API (if it's installed)
         var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
         if (configMenu is null)
@@ -233,6 +246,7 @@ public sealed class ModEntry : Mod
     private void GameLoop_SaveLoaded(object sender, SaveLoadedEventArgs e)
     {
         Reactions = Helper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
+        ReloadTextures();
     }
 
     private void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -244,21 +258,21 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private static void Display_MenuChanged(object sender, MenuChangedEventArgs e)
+    internal static void ReloadTextures()
     {
-        ReloadTextures();
-    }
-
-    private static void ReloadTextures()
-    {
+        if (!Context.IsWorldReady)
+            return;
+        
         try
         {
-            PortraitTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+            var main = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+            PortraitTexture = main;
         }
         catch
         {
             PortraitTexture = null;
         }
+        
         try
         {
             BackgroundTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/background");

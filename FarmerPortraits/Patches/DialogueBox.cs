@@ -9,6 +9,7 @@ using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using StardewValley.Tools;
+
 // ReSharper disable PossibleLossOfFraction
 
 namespace FarmerPortraits.Patches;
@@ -23,6 +24,7 @@ public class DialogueBoxPatches
 #else
     private const LogLevel Level =  LogLevel.Trace;
 #endif
+    private static int CurrentHeight { get; set; } = -1;
     
     private static void Log(string msg, LogLevel lv = Level) => ModEntry.SMonitor.Log(msg, lv);
     internal static void Apply(Harmony harmony)
@@ -56,9 +58,10 @@ public class DialogueBoxPatches
                 (!Config.ShowWithEvents && Game1.eventUp) ||
                 (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
                 return;
+            
             AdjustWindow(ref __instance);
 
-            if (__instance.characterDialogue.speaker is null)
+            if (__instance.characterDialogue?.speaker is null)
                 return;
 
             if (!Config.PortraitReactions)
@@ -88,19 +91,14 @@ public class DialogueBoxPatches
 #endif
                 try
                 {
-                    var p = ModEntry.SHelper.GameContent.Load<Texture2D>(
-                        $"aedenthorn.FarmerPortraits/portrait{farmerEmotion}");
-
-                    //if no portrait for that emotion, make it jump to default
-                    if (p is null)
-                        throw new NullReferenceException();
+                    var emotion = farmerEmotion == 0 ? "" : $"{farmerEmotion}";
+                    var p = ModEntry.SHelper.GameContent.Load<Texture2D>($"aedenthorn.FarmerPortraits/portrait{emotion}");
 
                     ModEntry.PortraitTexture = p;
                 }
                 catch (Exception)
                 {
-                    ModEntry.PortraitTexture =
-                        ModEntry.SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+                    ModEntry.PortraitTexture = ModEntry.SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
                 }
             }
         }
@@ -328,7 +326,7 @@ public class DialogueBoxPatches
     {
         if (!Config.FixText)
             return;
-        
+
         if (box.characterDialogue is null)
             return;
         
@@ -395,13 +393,24 @@ public class DialogueBoxPatches
 #endif
     }
 
-    private static void AdjustWindow(ref DialogueBox __instance)
+    private static void AdjustWindow(ref DialogueBox box)
     {
-        __instance.x = Math.Max(520, (int)Utility.getTopLeftPositionForCenteringOnScreen(__instance.width, __instance.height).X + 260);
-        __instance.width = Math.Min(Game1.uiViewport.Width - __instance.x - 48, 1200);
-        __instance.friendshipJewel = new Rectangle(__instance.x + __instance.width - 64, __instance.y + 256, 44, 44);
+        box.x = Math.Max(520, (int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X + 260);
+        box.width = Math.Min(Game1.uiViewport.Width - box.x - 48, 1200);
+        box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
 
         //adjust
-        AdjustText(ref __instance);
+        AdjustText(ref box);
+
+        if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
+        {
+            var newHeight = SpriteText.getHeightOfString(box.dialogues[0], box.width - 20) + 4;
+
+            if (newHeight <= box.height)
+                return;
+            
+            box.height = newHeight;
+            box.y -= (newHeight - box.height + 60);
+        }
     }
 }
