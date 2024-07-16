@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using DialogueDisplayFrameworkApi;
 using System.Text;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -16,8 +16,9 @@ namespace FarmerPortraits.Patches;
 
 public class DialogueBoxPatches
 {
-    private static Texture2D Background => ModEntry.BackgroundTexture;
-    private static Texture2D Portrait => ModEntry.PortraitTexture;
+    internal static bool HasDDF { get; set; }
+    internal static Texture2D Background => ModEntry.BackgroundTexture;
+    internal static Texture2D Portrait => ModEntry.PortraitTexture;
     private static ModConfig Config => ModEntry.Config;
 #if DEBUG
     private const LogLevel Level = LogLevel.Debug;
@@ -124,7 +125,7 @@ public class DialogueBoxPatches
     {
         try
         {
-            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
+            if (!Config.EnableMod || DialogueDisplayIntegrations.IsApplied || !__instance.transitionInitialized || __instance.transitioning ||
                 (!Config.ShowWithQuestions && __instance.isQuestion) ||
                 (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
                 (!Config.ShowWithEvents && Game1.eventUp) ||
@@ -175,7 +176,7 @@ public class DialogueBoxPatches
         SpriteText.drawStringHorizontallyCenteredAt(b, Game1.player.Name, xPos + boxWidth / 2, portraitBoxY + 296 + 16);
     }
 
-    private static void DrawFarmer(SpriteBatch b, int currentFrame, Rectangle sourceRect, Vector2 position, Color overrideColor)
+    internal static void DrawFarmer(SpriteBatch b, int currentFrame, Rectangle sourceRect, Vector2 position, Color overrideColor)
     {
         var animationFrame = new FarmerSprite.AnimationFrame(Game1.player.bathingClothes.Value ? 108 : currentFrame, 0, false, false);
         var who = Game1.player;
@@ -393,6 +394,13 @@ public class DialogueBoxPatches
         box.width = Math.Min(Game1.uiViewport.Width - box.x - 48, 1200);
         box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
 
+        if (HasDDF)
+        {
+            box.x += DialogueDisplayIntegrations.Data.XOffset ?? 0;
+            if (DialogueDisplayIntegrations.Data.Height != null)
+                box.height = DialogueDisplayIntegrations.Data.Height ?? 0;
+        }
+        
         //adjust
         AdjustText(ref box);
 

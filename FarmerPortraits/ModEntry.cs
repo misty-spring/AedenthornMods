@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DialogueDisplayFrameworkApi;
 using FarmerPortraits.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,6 +50,13 @@ public sealed class ModEntry : Mod
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
+        DialogueBoxPatches.HasDDF = Helper.ModRegistry.IsLoaded("Mangupix.DialogueDisplayFrameworkContinued");
+        
+        // get Dialogue Display Framework's API (if it's installed)
+        var DialogueDisplayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
+        if (DialogueDisplayApi is not null)
+            DialogueDisplayIntegrations.Apply(DialogueDisplayApi);
+        
         var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
         contentPatcherApi?.RegisterToken(
             mod: ModManifest,

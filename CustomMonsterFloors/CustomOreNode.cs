@@ -10,13 +10,13 @@ namespace CustomMonsterFloors
 
         public CustomOreNode(string nodeInfo)
         {
-            string[] infos = nodeInfo.Split('/');
-            this.spriteName = infos[0];
-            this.spawnChance = int.Parse(infos[1]);
-            string[] dropItems = infos[2].Split(';');
-            foreach(string item in dropItems)
+            var infos = nodeInfo.Split('/');
+            spriteName = infos[0];
+            spawnChance = int.Parse(infos[1]);
+            var dropItems = infos[2].Split(';');
+            foreach(var item in dropItems)
             {
-                string[] itema = item.Split(',');
+                var itema = item.Split(',');
                 this.dropItems.Add(int.Parse(itema[0]), double.Parse(itema[1]));
             }
         }
