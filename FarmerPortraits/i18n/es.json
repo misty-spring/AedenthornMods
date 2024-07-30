@@ -16,6 +16,7 @@
   "SpecificReactions.title": "Reacciones específicas",
   "SpecificReactions.description": "La expresión que tu personaje debería usar frente a las emociones de un PNJ (Esto se usa en general, pero puedes personalizarlas para cada PNJ usando ContentPatcher.)",
   "dots": "...",
+  "SpecificReactions.values.-1": "Esconder",
   "SpecificReactions.values.0": "Normal",
   "SpecificReactions.values.1": "Feliz",
   "SpecificReactions.values.2": "Triste",

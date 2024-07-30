@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DialogueDisplayFrameworkApi;
+using FarmerPortraits.Framework;
 using FarmerPortraits.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,15 +14,10 @@ namespace FarmerPortraits;
 /// <summary>The mod entry point.</summary>
 public sealed class ModEntry : Mod
 {
-    internal static IMonitor SMonitor;
-    internal static IModHelper SHelper;
+    internal static IMonitor Mon;
+    internal static IModHelper Help;
     internal static ModConfig Config;
     //internal static ModEntry context;
-
-    internal static Texture2D PortraitTexture;
-    internal static Texture2D BackgroundTexture;
-
-    internal static Dictionary<string, Dictionary<int, int>> Reactions { get; set; } = new();
 
     /// <summary>The mod entry point, called after the mod is first loaded.</summary>
     /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -31,8 +27,8 @@ public sealed class ModEntry : Mod
 
         //context = this;
 
-        SMonitor = Monitor;
-        SHelper = helper;
+        Mon = Monitor;
+        Help = helper;
 
         helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;
 #if DEBUG
@@ -50,9 +46,6 @@ public sealed class ModEntry : Mod
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        DialogueBoxPatches.HasDDF = Helper.ModRegistry.IsLoaded("Mangupix.DialogueDisplayFrameworkContinued");
-        
-        // get Dialogue Display Framework's API (if it's installed)
         var DialogueDisplayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
         if (DialogueDisplayApi is not null)
             DialogueDisplayIntegrations.Apply(DialogueDisplayApi);
@@ -182,7 +175,7 @@ public sealed class ModEntry : Mod
             text: () => Helper.Translation.Get("SpecificReactions.description")
         );
         
-        var allowedValues = new[] { "0", "1", "2", "3", "4", "5" };
+        var allowedValues = new[] { "-1", "0", "1", "2", "3", "4", "5" };
         
         //this gets the value as string, then turns it back into
         configMenu.AddTextOption(
@@ -253,7 +246,7 @@ public sealed class ModEntry : Mod
 
     private void GameLoop_SaveLoaded(object sender, SaveLoadedEventArgs e)
     {
-        Reactions = Helper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
+        Data.Reactions = Helper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
         ReloadTextures();
     }
 
@@ -273,21 +266,21 @@ public sealed class ModEntry : Mod
         
         try
         {
-            var main = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
-            PortraitTexture = main;
+            var main = Help.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/portrait");
+            Data.PortraitTexture = main;
         }
         catch
         {
-            PortraitTexture = null;
+            Data.PortraitTexture = null;
         }
         
         try
         {
-            BackgroundTexture = SHelper.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/background");
+            Data.BackgroundTexture = Help.GameContent.Load<Texture2D>("aedenthorn.FarmerPortraits/background");
         }
         catch
         {
-            BackgroundTexture = null;
+            Data.BackgroundTexture = null;
         }
     }
 }

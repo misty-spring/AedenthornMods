@@ -14,8 +14,8 @@ public class EventPatches
     private static LogLevel Level =>  LogLevel.Trace;
     #endif
 
-    private static IModHelper Help => ModEntry.SHelper;
-    private static void Log(string msg, LogLevel lv = LogLevel.Trace) => ModEntry.SMonitor.Log(msg, lv);
+    private static IModHelper Help => ModEntry.Help;
+    private static void Log(string msg, LogLevel lv = LogLevel.Trace) => ModEntry.Mon.Log(msg, lv);
 
     internal static void Apply(Harmony harmony)
     {

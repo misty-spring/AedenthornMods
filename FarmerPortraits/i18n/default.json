@@ -16,6 +16,7 @@
   "SpecificReactions.title": "Specific reactions",
   "SpecificReactions.description": "The way a farmer should react to NPCs' emotions. This is in general, but you can customize them per-character with ContentPatcher.)",
   "dots": "...",
+  "SpecificReactions.values.-1": "Hide",
   "SpecificReactions.values.0": "Normal",
   "SpecificReactions.values.1": "Happy",
   "SpecificReactions.values.2": "Sad",

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FarmerPortraits.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 
@@ -33,7 +34,7 @@ public static class Asset
 
         if (e.NamesWithoutLocale.Any(name => name.BaseName == "aedenthorn.FarmerPortraits/reactions"))
         {
-            ModEntry.Reactions = ModEntry.SHelper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
+            Data.Reactions = ModEntry.Help.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
         }
         
         if (e.NamesWithoutLocale.Any( name => name.StartsWith("aedenthorn.FarmerPortraits/portrait")))
