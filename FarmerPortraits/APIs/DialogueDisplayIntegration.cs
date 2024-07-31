@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using FarmerPortraits;
 using FarmerPortraits.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,7 +6,7 @@ using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 
-namespace DialogueDisplayFrameworkApi
+namespace FarmerPortraits.APIs
 {
     internal class DialogueDisplayIntegrations
     {
@@ -34,6 +32,11 @@ namespace DialogueDisplayFrameworkApi
             IsApplied = true;
         }
 
+        /// <summary>
+        /// Checks background image width.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void CheckWidth(object sender, IRenderEventArgs<IImageData> e)
         {
             if (e.Data.ID != "DialogueDisplayFramework.Images.PortraitBackground")
@@ -46,6 +49,11 @@ namespace DialogueDisplayFrameworkApi
             #endif
         }
 
+        /// <summary>
+        /// Checks whether the dialogue box width should be reset
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void CheckForResizing(object sender, IRenderEventArgs<IPortraitData> e)
         {
             if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled)
@@ -76,17 +84,18 @@ namespace DialogueDisplayFrameworkApi
             var yPos = e.DialogueBox.y;
             var boxWidth = e.DialogueBox.width;
             var boxHeight = e.DialogueBox.height;
+            var color = Utility.StringToColor(e.Data.Color) ?? Color.White;
             
             // top bar
-            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos, yPos - 20, boxWidth / 2 + Data.DividerWidth, 24), new Rectangle(275, 313, 1, 6), Color.White); 
+            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos, yPos - 20, boxWidth / 2 + Data.DividerWidth, 24), new Rectangle(275, 313, 1, 6), color); 
             // bottom bar
-            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos + 12, yPos + boxHeight, boxWidth / 2 + Data.DividerWidth, 32), new Rectangle(275, 328, 1, 8), Color.White);
+            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos + 12, yPos + boxHeight, boxWidth / 2 + Data.DividerWidth, 32), new Rectangle(275, 328, 1, 8), color);
             // left bar
-            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos - 32, yPos + 24, 32, boxHeight - 28), new Rectangle(264, 325, 8, 1), Color.White); 
+            e.SpriteBatch.Draw(Game1.mouseCursors, new Rectangle(xPos - 32, yPos + 24, 32, boxHeight - 28), new Rectangle(264, 325, 8, 1), color); 
             // top-left corner
-            e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(xPos - 44, yPos - 28), new Rectangle(261, 311, 14, 13), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f); 
+            e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(xPos - 44, yPos - 28), new Rectangle(261, 311, 14, 13), color, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f); 
             // bottom-left corner
-            e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(xPos - 44, yPos + boxHeight - 4), new Rectangle(261, 327, 14, 11), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f); 
+            e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(xPos - 44, yPos + boxHeight - 4), new Rectangle(261, 327, 14, 11), color, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f); 
             /* some bar we should NOT draw with DDF
             b.Draw(Game1.mouseCursors, new Rectangle(xPos + boxWidth, yPos, 28, boxHeight), new Rectangle(293, 324, 7, 1), Color.White); 
             // corners that shouldn't be drawn with DDF
@@ -95,7 +104,11 @@ namespace DialogueDisplayFrameworkApi
             //instead, for DDF we repeat the left bar - done in drawn portrait since otherwise it'll draw underneath
         }
 
-        /**/
+        /// <summary>
+        /// Renders player name.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void OnRenderedText(object sender, IRenderEventArgs<ITextData> e)
         {
             if (Data.CurrentFarmerEmotion == -1)
@@ -107,14 +120,15 @@ namespace DialogueDisplayFrameworkApi
             var portraitBoxY = e.DialogueBox.y + e.DialogueBox.height / 2 - 148 - 36;
             var YOffset = e.Data.YOffset == 320 ? 296 + 16 : e.Data.YOffset;
             
-            SpriteText.drawStringHorizontallyCenteredAt(e.SpriteBatch, Game1.player.Name, e.DialogueBox.x - Data.Distance / 2, portraitBoxY + YOffset);
+            SpriteText.drawStringHorizontallyCenteredAt(e.SpriteBatch, Game1.player.Name, e.DialogueBox.x - Data.Distance / 2, portraitBoxY + YOffset, color: Utility.StringToColor(e.Data.Color) ?? Color.White);
             //SpriteText.drawStringHorizontallyCenteredAt(b, Game1.player.Name, xPos + e.Data.Width / 2, portraitBoxY + 296 + 16);
             
 #if DEBUG
             ModEntry.Mon.LogOnce($"(text) WIDTH: {e.DialogueBox.width} X OFFSET: {e.Data.XOffset}", LogLevel.Info);
 #endif
         }
-        
+
+        /**/
         private static void OnRenderedPortrait(object sender, IRenderEventArgs<IPortraitData> e)
         {
             if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled)
@@ -140,10 +154,10 @@ namespace DialogueDisplayFrameworkApi
             else
             {
                 FarmerRenderer.isDrawingForUI = true;
-                Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY + e.DialogueBox.height / 2 - 208), Color.White);
+                Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY /*+ e.DialogueBox.height / 2 - 208*/), Color.White);
                 if (Game1.timeOfDay >= 1900)
                 {
-                    Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY + e.DialogueBox.height / 2 - 192), Color.DarkBlue * 0.3f);
+                    Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY /*+ e.DialogueBox.height / 2 - 192*/), Color.DarkBlue * 0.3f);
                 }
                 FarmerRenderer.isDrawingForUI = false;
             }

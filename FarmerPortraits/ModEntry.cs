@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using DialogueDisplayFrameworkApi;
+using FarmerPortraits.APIs;
 using FarmerPortraits.Framework;
 using FarmerPortraits.Patches;
 using HarmonyLib;
@@ -52,7 +52,7 @@ public sealed class ModEntry : Mod
         if (displayApi is not null)
             DialogueDisplayIntegrations.Apply(displayApi);
         
-        var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+        var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherApi>("Pathoschild.ContentPatcher");
         contentPatcherApi?.RegisterToken(
             mod: ModManifest,
             name: "Festival",

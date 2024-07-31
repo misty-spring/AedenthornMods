@@ -1,6 +1,5 @@
 using System;
-using DialogueDisplayFrameworkApi;
-using FarmerPortraits.Framework;
+using FarmerPortraits.APIs;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

@@ -1,9 +1,9 @@
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
-using System;
 
-namespace FarmerPortraits
+namespace FarmerPortraits.APIs
 {
     public interface IDialogueDisplayApi
     {
