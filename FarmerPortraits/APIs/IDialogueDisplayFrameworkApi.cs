@@ -326,4 +326,34 @@ namespace FarmerPortraits
         /// <summary>Whther to render the bottom connector when using vertical dividers.</summary>
         public bool BottomConnector { get; set; }
     }
+    
+    /*
+    public class BaseData
+    {
+        public int xOffset;
+        public int yOffset;
+        public bool right;
+        public bool bottom;
+        public int width = -1;
+        public int height;
+        public float alpha = 1;
+        public float scale = 4;
+        public float layerDepth = 0.88f;
+        public bool disabled;
+    }
+    
+    public class DividerConnectorData
+    {
+        public bool top;
+        public bool bottom;
+    }
+    
+    public class DividerData : BaseData
+    {
+        public string ID;
+        public bool horizontal;
+        public bool small;
+        public DividerConnectorData connectors = new() { top = true, bottom = true };
+        public string color;
+    }*/
 }

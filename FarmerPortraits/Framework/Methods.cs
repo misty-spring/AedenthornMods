@@ -38,7 +38,7 @@ public static class Methods
         var frame = Config.FacingFront ? 0 : 6;
         if (PortraitTexture != null && Config.UseCustomPortrait)
         {
-            b.Draw(PortraitTexture, new Rectangle(portraitBoxX + 20, portraitBoxY + 24, 256, 256), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.88f);
+            b.Draw(PortraitTexture, new Rectangle(portraitBoxX + 20, portraitBoxY + 28, 256, 256), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.88f);
         }
         else
         {
@@ -249,8 +249,31 @@ public static class Methods
 
     internal static void AdjustWindow(ref DialogueBox box)
     {
+        if (HasCPDDFAdvanced)
+            return;
+        
         box.x = Math.Max(520, (int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X + 260);
         box.width = Math.Min(Game1.uiViewport.Width - box.x - 48, 1200);
+        box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
+        
+        //adjust
+        AdjustText(ref box);
+
+        if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
+        {
+            box.height = 384;
+            box.y = Game1.uiViewport.Height - box.height - 64;
+        }
+    }
+    
+    internal static void ResizeWindow(ref DialogueBox box)
+    {
+        if (HasCPDDFAdvanced)
+            return;
+        
+        box.x = 76; //(int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X;
+        box.xPositionOnScreen = box.x;
+        box.width = 1200;
         box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
         
         //adjust

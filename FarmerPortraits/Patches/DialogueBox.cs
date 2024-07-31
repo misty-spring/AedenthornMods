@@ -1,5 +1,6 @@
 using System;
 using DialogueDisplayFrameworkApi;
+using FarmerPortraits.Framework;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -57,7 +58,7 @@ public class DialogueBoxPatches
 
             if (__instance.characterDialogue?.speaker is null)
                 return;
-            
+
             AdjustWindow(ref __instance);
             
             if (!Config.PortraitReactions)
@@ -100,6 +101,7 @@ public class DialogueBoxPatches
                 if (CurrentFarmerEmotion == -1)
                 {
                     PortraitTexture = null;
+                    ResizeWindow(ref __instance);
                     return;
                 }
 #if DEBUG
@@ -159,6 +161,7 @@ public class DialogueBoxPatches
                 return;
             
             AdjustWindow(ref __instance);
+            DividerWidth = (int)(__instance.width * 0.2);
         }
         catch (Exception e)
         {

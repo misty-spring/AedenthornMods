@@ -46,9 +46,11 @@ public sealed class ModEntry : Mod
 
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
-        var DialogueDisplayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
-        if (DialogueDisplayApi is not null)
-            DialogueDisplayIntegrations.Apply(DialogueDisplayApi);
+        Data.HasCPDDFAdvanced = Help.ModRegistry.IsLoaded("aedenthorn.CPDDFAdvanced");
+        
+        var displayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
+        if (displayApi is not null)
+            DialogueDisplayIntegrations.Apply(displayApi);
         
         var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
         contentPatcherApi?.RegisterToken(
