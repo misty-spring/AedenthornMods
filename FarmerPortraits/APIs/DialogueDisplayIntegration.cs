@@ -20,7 +20,7 @@ namespace FarmerPortraits.APIs
         public static void Apply(IDialogueDisplayApi api)
         {
             DialogueDisplayApi = api;
-
+            
             DialogueDisplayApi.RenderingPortrait += CheckForResizing;
             DialogueDisplayApi.RenderingImage += CheckWidth;
             
@@ -56,7 +56,7 @@ namespace FarmerPortraits.APIs
         /// <param name="e"></param>
         private static void CheckForResizing(object sender, IRenderEventArgs<IPortraitData> e)
         {
-            if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled)
+            if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled || Data.HasChangingSkies)
                 return;
 
             if (Game1.activeClickableMenu is not DialogueBox dialogueBox)
@@ -111,21 +111,22 @@ namespace FarmerPortraits.APIs
         /// <param name="e"></param>
         private static void OnRenderedText(object sender, IRenderEventArgs<ITextData> e)
         {
-            if (Data.CurrentFarmerEmotion == -1)
+            var data = e.Data;
+
+            if (Game1.activeClickableMenu is not DialogueBox dialogueBox)
                 return;
 
-            if (e.Data.XOffset != -222 || e.Data.Disabled)
+            if (data?.Disabled != false || Data.CurrentFarmerEmotion == -1 || Data.HasCPDDFAdvanced) 
                 return;
+            
+            var pos = GetDataPoint(dialogueBox, data);
 
-            var portraitBoxY = e.DialogueBox.y + e.DialogueBox.height / 2 - 148 - 36;
-            var YOffset = e.Data.YOffset == 320 ? 296 + 16 : e.Data.YOffset;
-            
-            SpriteText.drawStringHorizontallyCenteredAt(e.SpriteBatch, Game1.player.Name, e.DialogueBox.x - Data.Distance / 2, portraitBoxY + YOffset, color: Utility.StringToColor(e.Data.Color) ?? Color.White);
-            //SpriteText.drawStringHorizontallyCenteredAt(b, Game1.player.Name, xPos + e.Data.Width / 2, portraitBoxY + 296 + 16);
-            
-#if DEBUG
-            ModEntry.Mon.LogOnce($"(text) WIDTH: {e.DialogueBox.width} X OFFSET: {e.Data.XOffset}", LogLevel.Info);
-#endif
+            if (data.Alignment == SpriteText.ScrollTextAlignment.Center)
+                pos.X -= SpriteText.getWidthOfString(Game1.player.displayName) / 2;
+            else if (data.Alignment == SpriteText.ScrollTextAlignment.Right)
+                pos.X -= SpriteText.getWidthOfString(Game1.player.displayName);
+
+            SpriteText.drawString(e.SpriteBatch, Game1.player.displayName, (int)pos.X, (int)pos.Y, 999999, data.Width, 999999, data.Alpha, data.LayerDepth, data.Junimo, data.ScrollType, data.PlaceholderText ?? "", Utility.StringToColor(data.Color), data.Alignment);
         }
 
         /**/
@@ -134,30 +135,30 @@ namespace FarmerPortraits.APIs
             if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled)
                 return;
             
-            var portraitBoxX = e.Data.XOffset == -352 ? e.DialogueBox.x + 76 - Data.Distance : e.DialogueBox.x + e.Data.XOffset - Data.DividerWidth;
-            var portraitBoxY = e.Data.YOffset == 32 ? e.DialogueBox.y + e.DialogueBox.height / 2 - 148 - 36 + 24 : e.DialogueBox.y + e.Data.YOffset;
-            
-            if (Data.HasCPDDFAdvanced)
-                portraitBoxY -= 8;
-            
             var frame = Config.FacingFront ? 0 : 6;
-            var boxWidth = e.DialogueBox.width;
             var boxHeight = e.DialogueBox.height;
-            var distance = boxWidth / 4 - 128;
-            
-            var YOffset = e.Data.YOffset == 0 ? 28 : e.Data.YOffset;
+
+            if (Game1.activeClickableMenu is not DialogueBox dialogueBox)
+            {
+                return;
+            }
+
+            //from ddf
+            var shouldShake = dialogueBox.newPortaitShakeTimer > 0;
+            var offset = new Vector2(shouldShake ? Game1.random.Next(-11, 2) : 12, 0);
             
             if (Data.PortraitTexture != null && Config.UseCustomPortrait)
             {
-                e.SpriteBatch.Draw(Data.PortraitTexture, new Rectangle(portraitBoxX + 20 - e.Data.XOffset, portraitBoxY, 256, 256), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.88f);
+                e.SpriteBatch.Draw(Data.PortraitTexture, new Rectangle(GetDataPoint(dialogueBox, e.Data) - offset.ToPoint(), new Point(Data.PortraitTexture.Width*4, Data.PortraitTexture.Height*4)), null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0.88f);
             }
             else
             {
+                var fakeData = new PortraitData();
                 FarmerRenderer.isDrawingForUI = true;
-                Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY /*+ e.DialogueBox.height / 2 - 208*/), Color.White);
+                Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), GetDataPoint(dialogueBox, fakeData).ToVector2() - offset, Color.White);
                 if (Game1.timeOfDay >= 1900)
                 {
-                    Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), new Vector2(portraitBoxX, portraitBoxY /*+ e.DialogueBox.height / 2 - 192*/), Color.DarkBlue * 0.3f);
+                    Methods.DrawFarmer(e.SpriteBatch, frame, new Rectangle((frame % 6) * 16, Game1.player.bathingClothes.Value ? 576 : frame / 6 * 32, 16, 16), GetDataPoint(dialogueBox, fakeData).ToVector2() - offset, Color.DarkBlue * 0.3f);
                 }
                 FarmerRenderer.isDrawingForUI = false;
             }
@@ -169,6 +170,15 @@ namespace FarmerPortraits.APIs
             e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(e.DialogueBox.x - 24, e.DialogueBox.y - 28), new Rectangle(266, 311, 12, 13), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
             // bottom-right corner
             e.SpriteBatch.Draw(Game1.mouseCursors, new Vector2(e.DialogueBox.x - 24, e.DialogueBox.y + boxHeight - 4), new Rectangle(266, 327, 12, 11), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
+        }
+
+        private static Point GetDataPoint(DialogueBox box, IBaseData data)
+        {
+            var og = new Point(box.x + (!data.Right ? box.width : 0) + data.XOffset, box.y + (data.Bottom ? box.height : 0) + data.YOffset);
+
+            if (Data.HasCPDDFAdvanced)
+                og.X += 256;
+            return og;
         }
 
         /// <summary>

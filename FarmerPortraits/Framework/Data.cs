@@ -5,6 +5,7 @@ namespace FarmerPortraits.Framework;
 
 public static class Data
 {
+    internal static bool HasChangingSkies { get; set; }
     internal static bool HasCPDDFAdvanced { get; set; }
     internal static int DividerWidth { get; set; }
     internal const int Distance = 460;

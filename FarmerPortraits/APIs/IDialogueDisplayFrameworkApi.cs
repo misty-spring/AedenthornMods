@@ -327,7 +327,7 @@ namespace FarmerPortraits.APIs
         public bool BottomConnector { get; set; }
     }
     
-    /*
+    
     public class BaseData
     {
         public int xOffset;
@@ -348,12 +348,33 @@ namespace FarmerPortraits.APIs
         public bool bottom;
     }
     
-    public class DividerData : BaseData
+    public class PortraitData : BaseData, IPortraitData
     {
-        public string ID;
-        public bool horizontal;
-        public bool small;
-        public DividerConnectorData connectors = new() { top = true, bottom = true };
-        public string color;
-    }*/
+        public string TexturePath { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int W { get; set; }
+        public int H { get; set; }
+        public bool TileSheet { get; set; }
+
+        public PortraitData()
+        {
+            X = -1;
+            Y = -1;
+            W = 64;
+            H = 64;
+            TileSheet = true;
+        }
+
+        public int XOffset { get; set; }
+        public int YOffset { get; set; }
+        public bool Right { get; set; }
+        public bool Bottom { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public float Alpha { get; set; }
+        public float Scale { get; set; }
+        public float LayerDepth { get; set; }
+        public bool Disabled { get; set; }
+    }
 }

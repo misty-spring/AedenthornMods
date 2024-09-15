@@ -47,6 +47,7 @@ public sealed class ModEntry : Mod
     private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e)
     {
         Data.HasCPDDFAdvanced = Help.ModRegistry.IsLoaded("aedenthorn.CPDDFAdvanced");
+        Data.HasChangingSkies = Help.ModRegistry.IsLoaded("Kana.PortraitedChangingSkies");
         
         var displayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
         if (displayApi is not null)
