@@ -51,13 +51,22 @@ public class DialogueBoxPatches
             if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
                 (!Config.ShowWithQuestions && __instance.isQuestion) ||
                 (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
-                (!Config.ShowWithEvents && Game1.eventUp) ||
-                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+                (!Config.ShowWithEvents && Game1.eventUp))
+                return;
+
+            if (Config.ShowMisc && !__instance.isQuestion && __instance.isPortraitBox())
                 return;
 
             if (__instance.characterDialogue?.speaker is null)
                 return;
 
+            #if DEBUG
+            Log(__instance.getCurrentString());
+            #endif
+
+            if (__instance.getCurrentString().StartsWith("$HIDE"))
+                return;
+            
             AdjustWindow(ref __instance);
             
             if (!Config.PortraitReactions)
