@@ -3,6 +3,7 @@ using System.Text;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
@@ -14,7 +15,124 @@ namespace FarmerPortraits.Framework;
 public static class Methods
 {
     private static ModConfig Config => ModEntry.Config;
+#if DEBUG
+    private const LogLevel Level = LogLevel.Debug;
+#else
+    private const LogLevel Level =  LogLevel.Trace;
+#endif
+    private static void Log(string msg, LogLevel lv = Level) => ModEntry.Mon.Log(msg, lv);
     
+    internal static bool ShouldShow(ref DialogueBox box, bool checkAgain = false)
+    {
+        if (!Config.EnableMod || !box.transitionInitialized || box.transitioning ||
+                (!Config.ShowWithQuestions && box.isQuestion) ||
+                (!Config.ShowWithNpcPortrait && box.isPortraitBox()) ||
+                (!Config.ShowWithEvents && Game1.eventUp) ||
+                (!Config.ShowMisc && !box.isQuestion && !box.isPortraitBox()))
+                return false;
+
+        if (box.characterDialogue?.speaker is null && box.isPortraitBox())
+            return false;
+
+        #if DEBUG
+        Log($"LINE: {box.getCurrentString()}");
+        Log($"or '{box.characterDialogue?.dialogues[0]}'");
+        #endif
+
+        if (IgnoreAll || IgnoreCurrent && !checkAgain)
+            return false;
+
+        if (ShouldIgnore(ref box))
+            return false;
+        
+        return true;
+    }
+
+    internal static bool ShouldIgnore(ref DialogueBox box, int num = 0)
+    {
+        #if DEBUG
+        Log(box.dialogues?.Count + $" - {box.dialogues?[0]}, {box.dialogues?[1]}");
+        Log($"{box.characterDialogue?.dialogues?.Count ?? 0}, {box.characterDialogue?.dialogues?[0]}");
+        #endif
+        
+        if (box.getCurrentString().StartsWith("$show_player ", StringComparison.OrdinalIgnoreCase))
+        {
+            //fix string
+            if(box.dialogues?.Count > num)
+            {
+                var text = box.dialogues[num]?.Remove(0, 13);
+                box.dialogues[num] = text;
+            }
+
+            if (box.characterDialogue?.dialogues?.Count > num)
+            {
+                var characterText = box.characterDialogue.dialogues[num]?.Text.Remove(0, 13);
+                box.characterDialogue.dialogues[num].Text = characterText;
+            }
+
+            IgnoreCurrent = false;
+            IgnoreAll = false;
+            return false;
+        }
+        
+        if (box.getCurrentString().StartsWith("$no_player_all ", StringComparison.OrdinalIgnoreCase))
+        {
+            //fix string
+            if(box.dialogues?.Count > num)
+            {
+                var text = box.dialogues[num]?.Remove(0, 15);
+                box.dialogues[num] = text;
+            }
+
+            if (box.characterDialogue?.dialogues?.Count > num)
+            {
+                var characterText = box.characterDialogue.dialogues[num]?.Text.Remove(0, 15);
+                box.characterDialogue.dialogues[num].Text = characterText;
+            }
+
+            IgnoreAll = true;
+            return true;
+        }
+        
+        if (box.getCurrentString().StartsWith("$no_player ", StringComparison.OrdinalIgnoreCase))
+        {
+            //fix string
+            if(box.dialogues?.Count > num)
+            {
+                var text = box.dialogues[num]?.Remove(0, 11);
+                box.dialogues[num] = text;
+            }
+
+            if (box.characterDialogue?.dialogues?.Count > num)
+            {
+                var characterText = box.characterDialogue.dialogues[num]?.Text.Remove(0, 11);
+                box.characterDialogue.dialogues[num].Text = characterText;
+            }
+
+            IgnoreCurrent = true;
+            return true;
+        }
+
+        var testText = "";
+        if (box.dialogues?.Count > num)
+            testText = box.dialogues?[num];
+        else if (box.characterDialogue?.dialogues?.Count > num)
+            testText = box.characterDialogue?.dialogues[num]?.Text;
+        testText ??= "";
+        
+        #if DEBUG
+        Log(testText, LogLevel.Info);
+        #endif
+
+        if (IgnoreLines.Contains(testText))
+        {
+            IgnoreCurrent = true;
+            return true;
+        }
+
+        return false;
+    }
+
     internal static void DrawBox(SpriteBatch b, int xPos, int yPos, int boxWidth, int boxHeight)
     {
         b.Draw(Game1.mouseCursors, new Rectangle(xPos, yPos - 20, boxWidth, 24), new Rectangle(275, 313, 1, 6), Color.White);
@@ -207,8 +325,8 @@ public static class Methods
         var realWidth = box.width - 384;
         var size = SpriteText.getHeightOfString(d, realWidth);
 #if DEBUG
-        ModEntry.Mon.Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
-        ModEntry.Mon.Log(d);
+        Log($"Y: {size} (x2 {size * 2}), height: {box.height} & width: {realWidth}");
+        Log(d);
 #endif
         if (size * 2 <= box.height)
         {
@@ -242,7 +360,7 @@ public static class Methods
 #if DEBUG
         foreach (var line in box.characterDialogue.dialogues)
         {
-            ModEntry.Mon.Log(line.Text);
+            Log(line.Text);
         }
 #endif
     }

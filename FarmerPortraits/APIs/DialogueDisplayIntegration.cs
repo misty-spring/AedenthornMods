@@ -132,6 +132,10 @@ namespace FarmerPortraits.APIs
         /**/
         private static void OnRenderedPortrait(object sender, IRenderEventArgs<IPortraitData> e)
         {
+            var db = e.DialogueBox;
+            if(!Methods.ShouldShow(ref db))
+                return;
+            
             if (Data.CurrentFarmerEmotion == -1 || e.Data.Disabled)
                 return;
             

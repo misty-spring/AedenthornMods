@@ -11,6 +11,9 @@ public static class Asset
     private static ModConfig Config => ModEntry.Config;
     internal static void OnRequest(object sender, AssetRequestedEventArgs e)
     {
+        if (e.NameWithoutLocale.BaseName.Equals("aedenthorn.FarmerPortraits/ignore_lines"))
+             e.LoadFrom(() => new List<string>(), AssetLoadPriority.Low);
+        
         if (e.NameWithoutLocale.BaseName.Equals("aedenthorn.FarmerPortraits/reactions") == false)
             return;
         
@@ -32,6 +35,9 @@ public static class Asset
         if (Context.IsWorldReady == false)
             return;
 
+        if (e.NamesWithoutLocale.Any(name => name.BaseName == "aedenthorn.FarmerPortraits/ignore_lines"))
+            Data.IgnoreLines = ModEntry.Help.GameContent.Load<List<string>>("aedenthorn.FarmerPortraits/ignore_lines");
+        
         if (e.NamesWithoutLocale.Any(name => name.BaseName == "aedenthorn.FarmerPortraits/reactions"))
         {
             Data.Reactions = ModEntry.Help.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");

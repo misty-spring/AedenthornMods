@@ -51,7 +51,10 @@ public sealed class ModEntry : Mod
         
         var displayApi = Helper.ModRegistry.GetApi<IDialogueDisplayApi>("Mangupix.DialogueDisplayFrameworkContinued");
         if (displayApi is not null)
+        {
+            Mon.Log("Enabling compatibility with DDF.", LogLevel.Info);
             DialogueDisplayIntegrations.Apply(displayApi);
+        }
         
         var contentPatcherApi = Helper.ModRegistry.GetApi<IContentPatcherApi>("Pathoschild.ContentPatcher");
         contentPatcherApi?.RegisterToken(

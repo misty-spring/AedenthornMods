@@ -1,5 +1,6 @@
 using System;
 using FarmerPortraits.APIs;
+using FarmerPortraits.Framework;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -42,29 +43,25 @@ public class DialogueBoxPatches
             original: AccessTools.Constructor(typeof(DialogueBox), new[] { typeof(Dialogue)}),
             postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_new))
         );
+        
+        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.closeDialogue\".");
+        harmony.Patch(
+            original: AccessTools.Method(typeof(DialogueBox), "closeDialogue"),
+            prefix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Pre_closeDialogue))
+        );
+        
+        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.closeDialogue\".");
+        harmony.Patch(
+            original: AccessTools.Method(typeof(DialogueBox), "receiveLeftClick"),
+            prefix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Pre_receiveLeftClick))
+        ); //only re-check on left click, which should also remove the key
     }
     
     public static void Pre_setUpIcons(DialogueBox __instance)
     {
         try
         {
-            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
-                (!Config.ShowWithQuestions && __instance.isQuestion) ||
-                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
-                (!Config.ShowWithEvents && Game1.eventUp))
-                return;
-
-            if (Config.ShowMisc && !__instance.isQuestion && __instance.isPortraitBox())
-                return;
-
-            if (__instance.characterDialogue?.speaker is null)
-                return;
-
-            #if DEBUG
-            Log(__instance.getCurrentString());
-            #endif
-
-            if (__instance.getCurrentString().StartsWith("$HIDE"))
+            if(!ShouldShow(ref __instance))
                 return;
             
             AdjustWindow(ref __instance);
@@ -138,11 +135,7 @@ public class DialogueBoxPatches
     {
         try
         {
-            if (!Config.EnableMod || DialogueDisplayIntegrations.IsApplied || !__instance.transitionInitialized || __instance.transitioning ||
-                (!Config.ShowWithQuestions && __instance.isQuestion) ||
-                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
-                (!Config.ShowWithEvents && Game1.eventUp) ||
-                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+            if(!ShouldShow(ref __instance))
                 return;
 
             if (CurrentFarmerEmotion == -1)
@@ -161,11 +154,7 @@ public class DialogueBoxPatches
     {
         try
         {
-            if (!Config.EnableMod || !__instance.transitionInitialized || __instance.transitioning ||
-                (!Config.ShowWithQuestions && __instance.isQuestion) ||
-                (!Config.ShowWithNpcPortrait && __instance.isPortraitBox()) ||
-                (!Config.ShowWithEvents && Game1.eventUp) ||
-                (!Config.ShowMisc && !__instance.isQuestion && !__instance.isPortraitBox()))
+            if(!ShouldShow(ref __instance))
                 return;
             
             AdjustWindow(ref __instance);
@@ -174,6 +163,36 @@ public class DialogueBoxPatches
         catch (Exception e)
         {
             Log($"Error: {e}", LogLevel.Error);
+        }
+    }
+
+    internal static void Pre_closeDialogue()
+    {
+        #if DEBUG
+        Log("closing!!!");
+#endif
+        if(IgnoreAll)
+            IgnoreAll = false;
+        
+        if(IgnoreCurrent)
+            IgnoreCurrent = false;
+    }
+
+    private static void Pre_receiveLeftClick(ref DialogueBox __instance, int x, int y, bool playSound = true)
+    {
+        if(IgnoreAll)
+            IgnoreAll = false;
+        
+        if(IgnoreCurrent)
+            IgnoreCurrent = false;
+
+        try
+        {
+            ShouldIgnore(ref __instance, 1);
+        }
+        catch (Exception e)
+        {
+            ModEntry.Mon.VerboseLog("No next line found.");
         }
     }
 }
