@@ -39,7 +39,7 @@ public static class Methods
         Log($"or '{box.characterDialogue?.dialogues[0]}'");
         #endif
 
-        if (IgnoreAll || IgnoreCurrent && !checkAgain)
+        if (IgnoreAll || IgnoreCurrent)
             return false;
 
         if (ShouldIgnore(ref box))
@@ -51,6 +51,7 @@ public static class Methods
     internal static bool ShouldIgnore(ref DialogueBox box, int num = 0)
     {
         #if DEBUG
+        var debugText = $"DEBUG: {(box.characterDialogue?.dialogues?[num] != null ? box.characterDialogue.dialogues[num] : box.dialogues?[num])}";
         Log(box.dialogues?.Count + $" - {box.dialogues?[0]}, {box.dialogues?[1]}");
         Log($"{box.characterDialogue?.dialogues?.Count ?? 0}, {box.characterDialogue?.dialogues?[0]}");
         #endif
@@ -72,26 +73,10 @@ public static class Methods
 
             IgnoreCurrent = false;
             IgnoreAll = false;
+#if DEBUG
+            Log(debugText);
+#endif
             return false;
-        }
-        
-        if (box.getCurrentString().StartsWith("$no_player_all ", StringComparison.OrdinalIgnoreCase))
-        {
-            //fix string
-            if(box.dialogues?.Count > num)
-            {
-                var text = box.dialogues[num]?.Remove(0, 15);
-                box.dialogues[num] = text;
-            }
-
-            if (box.characterDialogue?.dialogues?.Count > num)
-            {
-                var characterText = box.characterDialogue.dialogues[num]?.Text.Remove(0, 15);
-                box.characterDialogue.dialogues[num].Text = characterText;
-            }
-
-            IgnoreAll = true;
-            return true;
         }
         
         if (box.getCurrentString().StartsWith("$no_player ", StringComparison.OrdinalIgnoreCase))
@@ -109,7 +94,10 @@ public static class Methods
                 box.characterDialogue.dialogues[num].Text = characterText;
             }
 
-            IgnoreCurrent = true;
+            IgnoreAll = true;
+#if DEBUG
+            Log(debugText);
+#endif
             return true;
         }
 
