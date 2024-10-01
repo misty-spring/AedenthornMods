@@ -26,7 +26,7 @@ public class DialogueBoxPatches
     private static void Log(string msg, LogLevel lv = Level) => ModEntry.Mon.Log(msg, lv);
     internal static void Apply(Harmony harmony)
     {
-        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.setUpIcons\".");
+        Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.drawBox\".");
         harmony.Patch(
             original: AccessTools.Method(typeof(DialogueBox), nameof(DialogueBox.drawBox)),
             postfix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Post_drawBox))
@@ -49,19 +49,19 @@ public class DialogueBoxPatches
             original: AccessTools.Method(typeof(DialogueBox), "closeDialogue"),
             prefix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Pre_closeDialogue))
         );
-        
+        /*
         Log($"Applying Harmony patch \"{nameof(DialogueBoxPatches)}\": postfixing SDV method \"DialogueBox.closeDialogue\".");
         harmony.Patch(
             original: AccessTools.Method(typeof(DialogueBox), "receiveLeftClick"),
             prefix: new HarmonyMethod(typeof(DialogueBoxPatches), nameof(Pre_receiveLeftClick))
-        ); //only re-check on left click, which should also remove the key
+        ); //only re-check on left click, which should also remove the key*/
     }
     
     public static void Pre_setUpIcons(DialogueBox __instance)
     {
         try
         {
-            if(!ShouldShow(ref __instance))
+            if(!ShouldShow(ref __instance, true))
                 return;
             
             AdjustWindow(ref __instance);
@@ -171,18 +171,12 @@ public class DialogueBoxPatches
         #if DEBUG
         Log("closing!!!");
 #endif
-        if(IgnoreAll)
-            IgnoreAll = false;
-        
         if(IgnoreCurrent)
             IgnoreCurrent = false;
     }
 
     private static void Pre_receiveLeftClick(ref DialogueBox __instance, int x, int y, bool playSound = true)
     {
-        if(IgnoreAll)
-            IgnoreAll = false;
-        
         if(IgnoreCurrent)
             IgnoreCurrent = false;
 

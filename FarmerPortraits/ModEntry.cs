@@ -70,6 +70,19 @@ public sealed class ModEntry : Mod
                 return ArraySegment<string>.Empty;
             });
         
+        contentPatcherApi?.RegisterToken(
+            mod: ModManifest,
+            name: "ShowMisc",
+            getValue: () =>
+            {
+                if (Config.ShowMisc)
+                {
+                    return new[] { "true" };
+                }
+                
+                return new[] { "false" };
+            });
+        
         // get Generic Mod Config Menu's API (if it's installed)
         var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
         if (configMenu is null)

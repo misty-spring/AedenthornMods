@@ -39,7 +39,7 @@ public static class Methods
         Log($"or '{box.characterDialogue?.dialogues[0]}'");
         #endif
 
-        if (IgnoreAll || IgnoreCurrent)
+        if (IgnoreCurrent && !checkAgain)
             return false;
 
         if (ShouldIgnore(ref box))
@@ -50,6 +50,8 @@ public static class Methods
 
     internal static bool ShouldIgnore(ref DialogueBox box, int num = 0)
     {
+        IgnoreCurrent = false;
+        
         #if DEBUG
         var debugText = $"DEBUG: {(box.characterDialogue?.dialogues?[num] != null ? box.characterDialogue.dialogues[num] : box.dialogues?[num])}";
         Log(box.dialogues?.Count + $" - {box.dialogues?[0]}, {box.dialogues?[1]}");
@@ -72,7 +74,6 @@ public static class Methods
             }
 
             IgnoreCurrent = false;
-            IgnoreAll = false;
 #if DEBUG
             Log(debugText);
 #endif
@@ -94,7 +95,8 @@ public static class Methods
                 box.characterDialogue.dialogues[num].Text = characterText;
             }
 
-            IgnoreAll = true;
+            IgnoreCurrent = true;
+            //ResizeWindow(ref box);
 #if DEBUG
             Log(debugText);
 #endif
