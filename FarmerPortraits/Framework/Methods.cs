@@ -96,7 +96,9 @@ public static class Methods
             }
 
             IgnoreCurrent = true;
-            //ResizeWindow(ref box);
+            var newBox = GetNew(box);
+            box.exitThisMenuNoSound();
+            Game1.activeClickableMenu = newBox as IClickableMenu;
 #if DEBUG
             Log(debugText);
 #endif
@@ -121,6 +123,27 @@ public static class Methods
         }
 
         return false;
+    }
+
+    private static object GetNew(DialogueBox box)
+    {
+        if (box.characterDialogue?.dialogues?[0] != null)
+            box.characterDialogue.dialogues[0].Text = $"$no_player {box.characterDialogue.dialogues[0].Text}";
+        else
+            box.dialogues[0] = $"$no_player {box.dialogues[0]}";
+
+        var newText = box.characterDialogue?.dialogues?[0] != null ? new DialogueBox(box.characterDialogue) : new DialogueBox(box.dialogues);
+        
+        newText.responses = box.responses;
+        newText.isQuestion = box.isQuestion;
+        newText.selectedResponse = box.selectedResponse;
+        newText.allClickableComponents = box.allClickableComponents;
+        newText.currentlySnappedComponent = box.currentlySnappedComponent;
+        newText.responseCC = box.responseCC;
+        newText.behaviorBeforeCleanup = box.behaviorBeforeCleanup;
+        newText.dialogueContinuedOnNextPage = box.dialogueContinuedOnNextPage;
+        newText.exitFunction = box.exitFunction;
+        return newText;
     }
 
     internal static void DrawBox(SpriteBatch b, int xPos, int yPos, int boxWidth, int boxHeight)
@@ -367,6 +390,24 @@ public static class Methods
         //adjust
         AdjustText(ref box);
 
+        if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
+        {
+            box.height = 384;
+            box.y = Game1.uiViewport.Height - box.height - 64;
+        }
+    }
+
+    private static void ResetBounds(ref DialogueBox box)
+    {
+        if (HasCPDDFAdvanced)
+            return;
+
+        var big = box.isPortraitBox() || box.isQuestion;
+        box.x = big ? 76 : (int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X;
+        box.xPositionOnScreen = box.x;
+        box.width = big ? 1200 : 384;
+        box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
+        
         if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
         {
             box.height = 384;
