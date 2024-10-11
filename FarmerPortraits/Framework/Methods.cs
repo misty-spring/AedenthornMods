@@ -52,12 +52,6 @@ public static class Methods
     {
         IgnoreCurrent = false;
         
-        #if DEBUG
-        var debugText = $"DEBUG: {(box.characterDialogue?.dialogues?[num] != null ? box.characterDialogue.dialogues[num] : box.dialogues?[num])}";
-        Log(box.dialogues?.Count + $" - {box.dialogues?[0]}, {box.dialogues?[1]}");
-        Log($"{box.characterDialogue?.dialogues?.Count ?? 0}, {box.characterDialogue?.dialogues?[0]}");
-        #endif
-        
         if (box.getCurrentString().StartsWith("$show_player ", StringComparison.OrdinalIgnoreCase))
         {
             //fix string
@@ -74,9 +68,6 @@ public static class Methods
             }
 
             IgnoreCurrent = false;
-#if DEBUG
-            Log(debugText);
-#endif
             return false;
         }
         
@@ -96,12 +87,28 @@ public static class Methods
             }
 
             IgnoreCurrent = true;
-            var newBox = GetNew(box);
-            box.exitThisMenuNoSound();
-            Game1.activeClickableMenu = newBox as IClickableMenu;
-#if DEBUG
-            Log(debugText);
-#endif
+
+            if (box.isQuestion || box.isPortraitBox())
+            {
+                box.width = 1200;
+                box.x = 0;
+            }
+            else
+            {
+                var text = "";
+                if(box.dialogues?.Count > 0)
+                    text = box.dialogues[0];
+                else if (box.characterDialogue?.dialogues?.Count > 0)
+                    text = box.characterDialogue.dialogues[0].Text;
+                
+                var width = SpriteText.getWidthOfString(text);
+                var height = SpriteText.getHeightOfString("HEIGHT");
+                var position = Utility.getTopLeftPositionForCenteringOnScreen(Game1.viewport, width, height);
+
+                box.y = Game1.viewport.Height - height - 20;
+                box.x = (int)position.X;
+                box.width = width + 20;
+            }
             return true;
         }
 
@@ -395,6 +402,14 @@ public static class Methods
             box.height = 384;
             box.y = Game1.uiViewport.Height - box.height - 64;
         }
+        
+        if(Game1.player.currentLocation.Name.Equals("QiNutRoom") && InQiRange(Game1.player.TilePoint))
+            box.height = 500;
+    }
+
+    private static bool InQiRange(Point playerTile)
+    {
+        return playerTile.X > 11 || playerTile.Y < 6;
     }
 
     private static void ResetBounds(ref DialogueBox box)

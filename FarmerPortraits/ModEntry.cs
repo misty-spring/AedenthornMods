@@ -269,12 +269,20 @@ public sealed class ModEntry : Mod
         ReloadTextures();
     }
 
-    private void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
+    private static void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
     {
-        if(e.Button == SButton.Enter && Context.IsWorldReady)
+        if (!Context.IsWorldReady)
+            return;
+        
+        if(e.Button == SButton.Enter)
         {
             var d = new Dialogue(Game1.getCharacterFromName("Lewis"), null, "This is a reaction change!$1#$b#Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.$u");
             Game1.DrawDialogue(d);
+        }
+        
+        if(e.Button == SButton.RightShift)
+        {
+            Game1.drawDialogueBox("Test.#$no_player does this work?#I hope it did.");
         }
     }
 
