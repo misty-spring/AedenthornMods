@@ -173,6 +173,8 @@ public class DialogueBoxPatches
 #endif
         if(IgnoreCurrent)
             IgnoreCurrent = false;
+
+        ShouldResize = false;
     }
 
     private static void Pre_receiveLeftClick(ref DialogueBox __instance, int x, int y, bool playSound = true)

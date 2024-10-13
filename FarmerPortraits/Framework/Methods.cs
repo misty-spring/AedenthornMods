@@ -403,7 +403,7 @@ public static class Methods
             box.y = Game1.uiViewport.Height - box.height - 64;
         }
         
-        if(Game1.player.currentLocation.Name.Equals("QiNutRoom") && InQiRange(Game1.player.TilePoint))
+        if(Game1.player.currentLocation.Name.Equals("QiNutRoom") && (InQiRange(Game1.player.TilePoint) || ShouldResize))
             box.height = 500;
     }
 
