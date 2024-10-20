@@ -7,7 +7,7 @@ namespace FarmerPortraits.Patches;
 
 public class EventPatches
 {
-    internal static string FestivalId = null;
+    internal static string FestivalId;
     #if DEBUG
     private static LogLevel Level =>  LogLevel.Debug;
     #else

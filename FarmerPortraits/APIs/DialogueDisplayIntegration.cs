@@ -10,7 +10,7 @@ namespace FarmerPortraits.APIs
 {
     internal class DialogueDisplayIntegrations
     {
-        public static bool IsApplied { get; private set; } = false;
+        public static bool IsApplied { get; private set; }
 
         private static IModHelper Helper => ModEntry.Help;
         private static ModConfig Config => ModEntry.Config;

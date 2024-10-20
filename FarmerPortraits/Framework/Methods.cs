@@ -22,7 +22,7 @@ public static class Methods
 #endif
     private static void Log(string msg, LogLevel lv = Level) => ModEntry.Mon.Log(msg, lv);
     
-    internal static bool ShouldShow(ref DialogueBox box, bool checkAgain = false)
+    internal static bool ShouldShow(ref DialogueBox box, bool checkAgain = false, bool isDrawing = false)
     {
         if (!Config.EnableMod || !box.transitionInitialized || box.transitioning ||
                 (!Config.ShowWithQuestions && box.isQuestion) ||
@@ -34,21 +34,28 @@ public static class Methods
         if (box.characterDialogue?.speaker is null && box.isPortraitBox())
             return false;
 
-        #if DEBUG
+        TimesCalled++;
+        if (TimesCalled % 2 == 0)
+        {
+            TimesCalled = 0;
+            return !IgnoreCurrent;
+        }
+        
+        /*#if DEBUG
         Log($"LINE: {box.getCurrentString()}");
         Log($"or '{box.characterDialogue?.dialogues[0]}'");
-        #endif
+        #endif*/
 
         if (IgnoreCurrent && !checkAgain)
             return false;
 
-        if (ShouldIgnore(ref box))
+        if (ShouldIgnore(ref box, drawing: isDrawing))
             return false;
         
         return true;
     }
 
-    internal static bool ShouldIgnore(ref DialogueBox box, int num = 0)
+    internal static bool ShouldIgnore(ref DialogueBox box, int num = 0, bool drawing = false)
     {
         IgnoreCurrent = false;
         
@@ -73,6 +80,10 @@ public static class Methods
         
         if (box.getCurrentString().StartsWith("$no_player ", StringComparison.OrdinalIgnoreCase))
         {
+            IgnoreCurrent = true;
+#if DEBUG
+            Log("!!!");
+#endif
             //fix string
             if(box.dialogues?.Count > num)
             {
@@ -86,15 +97,19 @@ public static class Methods
                 box.characterDialogue.dialogues[num].Text = characterText;
             }
 
-            IgnoreCurrent = true;
-
             if (box.isQuestion || box.isPortraitBox())
             {
+#if DEBUG
+                Log("Box is portrait or question.");
+#endif
                 box.width = 1200;
                 box.x = 0;
             }
             else
             {
+#if DEBUG
+                Log("Box is neither portrait nor question.");
+#endif
                 var text = "";
                 if(box.dialogues?.Count > 0)
                     text = box.dialogues[0];
@@ -105,9 +120,10 @@ public static class Methods
                 var height = SpriteText.getHeightOfString("HEIGHT");
                 var position = Utility.getTopLeftPositionForCenteringOnScreen(Game1.viewport, width, height);
 
-                box.y = Game1.viewport.Height - height - 20;
+                box.y = Game1.viewport.Height - height - 40;
                 box.x = (int)position.X;
-                box.width = width + 20;
+                box.width = width + 80;
+                return true;
             }
             return true;
         }
@@ -120,7 +136,8 @@ public static class Methods
         testText ??= "";
         
         #if DEBUG
-        Log(testText, LogLevel.Info);
+        if(!drawing)
+            Log(testText, LogLevel.Info);
         #endif
 
         if (IgnoreLines.Contains(testText))
@@ -163,8 +180,6 @@ public static class Methods
         b.Draw(Game1.mouseCursors, new Rectangle(xPos + boxWidth, yPos, 28, boxHeight), new Rectangle(293, 324, 7, 1), Color.White);
         b.Draw(Game1.mouseCursors, new Vector2(xPos + boxWidth - 8, yPos - 28), new Rectangle(291, 311, 12, 11), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f);
         b.Draw(Game1.mouseCursors, new Vector2(xPos + boxWidth - 8, yPos + boxHeight - 8), new Rectangle(291, 326, 12, 12), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0.87f);
-
-        //return;
         
         if (BackgroundTexture != null && Config.UseCustomBackground)
             b.Draw(BackgroundTexture, new Rectangle(xPos - 4, yPos, boxWidth + 12, boxHeight + 4), null, Color.White);

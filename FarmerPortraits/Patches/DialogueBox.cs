@@ -61,7 +61,11 @@ public class DialogueBoxPatches
     {
         try
         {
-            if(!ShouldShow(ref __instance, true))
+            var shouldShow = ShouldShow(ref __instance, true);
+#if DEBUG
+            Log($"Result: {shouldShow}");
+#endif
+            if(!shouldShow)
                 return;
             
             AdjustWindow(ref __instance);
@@ -135,7 +139,7 @@ public class DialogueBoxPatches
     {
         try
         {
-            if(!ShouldShow(ref __instance))
+            if(!ShouldShow(ref __instance, isDrawing: true))
                 return;
 
             if (CurrentFarmerEmotion == -1)

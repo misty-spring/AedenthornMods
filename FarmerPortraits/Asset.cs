@@ -43,9 +43,9 @@ public static class Asset
             Data.Reactions = ModEntry.Help.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
         }
         
-        if (e.NamesWithoutLocale.Any( name => name.StartsWith("aedenthorn.FarmerPortraits/portrait")))
+        if (e.NamesWithoutLocale.Any( name => name.StartsWith("aedenthorn.FarmerPortraits/portrait") || name.StartsWith("aedenthorn.FarmerPortraits/data")))
         {
-            ModEntry.ReloadTextures();
+            ModEntry.ReloadData();
         }
     }
 }

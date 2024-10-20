@@ -266,7 +266,7 @@ public sealed class ModEntry : Mod
     private void GameLoop_SaveLoaded(object sender, SaveLoadedEventArgs e)
     {
         Data.Reactions = Helper.GameContent.Load<Dictionary<string, Dictionary<int, int>>>("aedenthorn.FarmerPortraits/reactions");
-        ReloadTextures();
+        ReloadData();
     }
 
     private static void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -286,7 +286,7 @@ public sealed class ModEntry : Mod
         }
     }
 
-    internal static void ReloadTextures()
+    internal static void ReloadData()
     {
         if (!Context.IsWorldReady)
             return;
