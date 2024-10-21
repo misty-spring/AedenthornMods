@@ -37,3 +37,5 @@ now, you can use the key to hide your player on a specific dialogue. For example
 If the player has the portrait enabled for world dialogue, the portrait will be hidden. Otherwise, the dialogue will show normally (without any command).
 
 This also makes sure that the dialogue will show normally if they don't have Farmer Portraits installed.
+
+![Example video. A character interacts with the mailbox, and a dialogue pops up.](https://github.com/misty-spring/AedenthornMods/blob/master/FarmerPortraits/docs/example.gif)
