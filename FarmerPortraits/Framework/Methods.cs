@@ -40,11 +40,6 @@ public static class Methods
             TimesCalled = 0;
             return !IgnoreCurrent;
         }
-        
-        /*#if DEBUG
-        Log($"LINE: {box.getCurrentString()}");
-        Log($"or '{box.characterDialogue?.dialogues[0]}'");
-        #endif*/
 
         if (IgnoreCurrent && !checkAgain)
             return false;
@@ -110,14 +105,10 @@ public static class Methods
 #if DEBUG
                 Log("Box is neither portrait nor question.");
 #endif
-                var text = "";
-                if(box.dialogues?.Count > 0)
-                    text = box.dialogues[0];
-                else if (box.characterDialogue?.dialogues?.Count > 0)
-                    text = box.characterDialogue.dialogues[0].Text;
+                var text = GetCurrentText(box);
                 
                 var width = SpriteText.getWidthOfString(text);
-                var height = SpriteText.getHeightOfString("HEIGHT");
+                var height = SpriteText.getHeightOfString(text);
                 var position = Utility.getTopLeftPositionForCenteringOnScreen(Game1.viewport, width, height);
 
                 box.y = Game1.viewport.Height - height - 40;
@@ -149,25 +140,15 @@ public static class Methods
         return false;
     }
 
-    private static object GetNew(DialogueBox box)
+    private static string GetCurrentText(DialogueBox box)
     {
-        if (box.characterDialogue?.dialogues?[0] != null)
-            box.characterDialogue.dialogues[0].Text = $"$no_player {box.characterDialogue.dialogues[0].Text}";
-        else
-            box.dialogues[0] = $"$no_player {box.dialogues[0]}";
-
-        var newText = box.characterDialogue?.dialogues?[0] != null ? new DialogueBox(box.characterDialogue) : new DialogueBox(box.dialogues);
+        if(box.dialogues?.Count > 0)
+            return box.dialogues[0];
         
-        newText.responses = box.responses;
-        newText.isQuestion = box.isQuestion;
-        newText.selectedResponse = box.selectedResponse;
-        newText.allClickableComponents = box.allClickableComponents;
-        newText.currentlySnappedComponent = box.currentlySnappedComponent;
-        newText.responseCC = box.responseCC;
-        newText.behaviorBeforeCleanup = box.behaviorBeforeCleanup;
-        newText.dialogueContinuedOnNextPage = box.dialogueContinuedOnNextPage;
-        newText.exitFunction = box.exitFunction;
-        return newText;
+        if (box.characterDialogue?.dialogues?.Count > 0)
+            return box.characterDialogue.dialogues[0]?.Text;
+        
+        return box.getCurrentString();
     }
 
     internal static void DrawBox(SpriteBatch b, int xPos, int yPos, int boxWidth, int boxHeight)
@@ -405,8 +386,11 @@ public static class Methods
         if (HasCPDDFAdvanced)
             return;
         
+        //x and width
         box.x = Math.Max(520, (int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X + 260);
         box.width = Math.Min(Game1.uiViewport.Width - box.x - 48, 1200);
+        
+        //jewel
         box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
         
         //adjust
@@ -418,30 +402,16 @@ public static class Methods
             box.y = Game1.uiViewport.Height - box.height - 64;
         }
         
-        if(Game1.player.currentLocation.Name.Equals("QiNutRoom") && (InQiRange(Game1.player.TilePoint) || ShouldResize))
-            box.height = 500;
-    }
-
-    private static bool InQiRange(Point playerTile)
-    {
-        return playerTile.X > 11 || playerTile.Y < 6;
-    }
-
-    private static void ResetBounds(ref DialogueBox box)
-    {
-        if (HasCPDDFAdvanced)
-            return;
-
-        var big = box.isPortraitBox() || box.isQuestion;
-        box.x = big ? 76 : (int)Utility.getTopLeftPositionForCenteringOnScreen(box.width, box.height).X;
-        box.xPositionOnScreen = box.x;
-        box.width = big ? 1200 : 384;
-        box.friendshipJewel = new Rectangle(box.x + box.width - 64, box.y + 256, 44, 44);
-        
-        if (Config.ShowMisc && !box.isQuestion && !box.isPortraitBox())
+        //y and height
+        var textHeight = SpriteText.getHeightOfString(GetCurrentText(box));
+#if DEBUG
+        Log($"Text height: {textHeight}");
+#endif
+        if (textHeight > box.height)
         {
-            box.height = 384;
-            box.y = Game1.uiViewport.Height - box.height - 64;
+            var add = textHeight - box.height;
+            box.y -= add;
+            box.height += add;
         }
     }
     

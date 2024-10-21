@@ -172,27 +172,13 @@ public class DialogueBoxPatches
 
     internal static void Pre_closeDialogue()
     {
-        #if DEBUG
-        Log("closing!!!");
+#if DEBUG
+        Log("Closing!!!");
 #endif
         if(IgnoreCurrent)
             IgnoreCurrent = false;
 
         ShouldResize = false;
-    }
-
-    private static void Pre_receiveLeftClick(ref DialogueBox __instance, int x, int y, bool playSound = true)
-    {
-        if(IgnoreCurrent)
-            IgnoreCurrent = false;
-
-        try
-        {
-            ShouldIgnore(ref __instance, 1);
-        }
-        catch (Exception e)
-        {
-            ModEntry.Mon.VerboseLog("No next line found.");
-        }
+        CurrentFarmerEmotion = 0;
     }
 }
