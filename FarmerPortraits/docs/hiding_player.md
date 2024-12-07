@@ -1,9 +1,23 @@
 # Hiding the player
 
-As of 1.3, you can use the key `$no_player` to hide portraits on world dialogues.
+As of 1.3, you can hide the player's portraits on world dialogues.
 
 ## How to use
 
+### New method
+
+You can just use an empty character at any point in the dialogue, and the portrait will be hidden.
+It must be this specific character: ‎` ‎`
+
+It's suggested to use it at the end. Like this:
+
+`"It works like this.#$b#%They start explaining it to you.#$#%You feel your eyes glaze over... ‎"` 
+
+The empty character is hidden at the end, so it won't affect how your text looks, and you don't need to use any tokens.
+
+![Example video. A farmer player and Penny talk. She says "Hi. There should be no player here.‏ Neither here." The panels, accordingly, have no player portrait.](https://github.com/misty-spring/AedenthornMods/blob/master/FarmerPortraits/docs/example_new.gif)
+
+### Legacy method
 First, add this to your dynamic tokens:
 ```jsonc
 "DynamicTokens": [
@@ -15,8 +29,7 @@ First, add this to your dynamic tokens:
       "Name":"n",
       "Value":"$no_player ",
       "When": {
-        "HasMod": "mistyspring.aedenthornFarmerPortraits",
-        "mistyspring.aedenthornFarmerPortraits/ShowMisc": true
+        "HasMod": "mistyspring.aedenthornFarmerPortraits"
       }
     }
   ],
